@@ -70,7 +70,8 @@ export function useMultiSessionOpenClaw() {
     deleteGatewayAgent,
     listGatewaySessions,
     getChatHistory,
-    switchToSession
+    switchToSession,
+    onBackgroundSessionFinalRef
   } = useOpenClaw({}, activeSession.sessionKey)
 
   // ─── History loading state ────────────────────────────────────────────────
@@ -502,6 +503,19 @@ export function useMultiSessionOpenClaw() {
       setActiveSessionId
     ]
   )
+
+  // ─── Auto-switch on background session completion ─────────────────────────
+  // Keep callback ref current every render so it always closes over the latest
+  // sessions list and switchSession function.
+  useEffect(() => {
+    onBackgroundSessionFinalRef.current = async (sessionKey: string) => {
+      console.log('[Session] Background session completed, switching to:', sessionKey)
+      const session = sessions.find((s) => s.sessionKey === sessionKey)
+      if (session) {
+        await switchSession(session.id)
+      }
+    }
+  })
 
   // ─── Message operations ───────────────────────────────────────────────────
   const sendMessage = useCallback(

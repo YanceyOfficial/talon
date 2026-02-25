@@ -47,6 +47,17 @@ export function useOpenClaw(
   const [gatewayUrl, setGatewayUrl] = useState<string>(fullConfig.gatewayUrl)
   const [currentSessionKey, setCurrentSessionKey] = useState<string>(sessionKey)
 
+  // Ref that always holds the latest currentSessionKey for use inside WS closures
+  const currentSessionKeyRef = useRef<string>(sessionKey)
+  useEffect(() => {
+    currentSessionKeyRef.current = currentSessionKey
+  }, [currentSessionKey])
+
+  // Callback ref: called by useMultiSessionOpenClaw to handle background session completions
+  const onBackgroundSessionFinalRef = useRef<
+    ((key: string) => void) | undefined
+  >(undefined)
+
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectAttemptsRef = useRef(0)
   const reconnectTimeoutRef = useRef<number | undefined>(undefined)
@@ -249,8 +260,15 @@ export function useOpenClaw(
 
       // Handle agent streaming events
       function handleAgentEvent(payload: EventFrame['payload']) {
+        const eventSessionKey = payload?.sessionKey
         const text = payload?.data?.text // Cumulative text
         const stream = payload?.stream
+
+        // Route to active session only; skip background sessions
+        const isActive =
+          !eventSessionKey ||
+          eventSessionKey === currentSessionKeyRef.current
+        if (!isActive) return
 
         // Only process assistant stream
         if (stream === 'assistant' && text) {
@@ -261,11 +279,17 @@ export function useOpenClaw(
 
       // Handle chat state events
       function handleChatEvent(payload: EventFrame['payload']) {
+        const eventSessionKey = payload?.sessionKey
         const state = payload?.state
+
+        const isActive =
+          !eventSessionKey ||
+          eventSessionKey === currentSessionKeyRef.current
 
         switch (state) {
           case 'delta': {
             // Streaming chunk (fallback, mainly handled by agent events)
+            if (!isActive) break
             setIsStreaming(true)
             const text = extractText(payload?.message?.content)
             if (text) {
@@ -275,13 +299,23 @@ export function useOpenClaw(
           }
 
           case 'final':
-            // Mark message as complete
-            setIsStreaming(false)
-            setMessages((prev) => markLastMessageFinal(prev))
+            if (isActive) {
+              // Mark message as complete for the active session
+              setIsStreaming(false)
+              setMessages((prev) => markLastMessageFinal(prev))
+            } else if (eventSessionKey) {
+              // Background session completed — trigger auto-switch
+              console.log(
+                '[OpenClaw] Background session final:',
+                eventSessionKey
+              )
+              onBackgroundSessionFinalRef.current?.(eventSessionKey)
+            }
             break
 
           case 'error': {
-            // Handle error
+            // Handle error for active session only
+            if (!isActive) break
             setIsStreaming(false)
             const errorMsg = payload?.errorMessage || 'Unknown error'
             setMessages((prev) => [
@@ -668,6 +702,7 @@ export function useOpenClaw(
     getChatHistory,
     getSessionUsage,
     deleteGatewaySession,
-    switchToSession
+    switchToSession,
+    onBackgroundSessionFinalRef
   }
 }

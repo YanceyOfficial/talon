@@ -21,8 +21,12 @@ export interface EventFrame {
   event: string
   payload?: {
     nonce?: string
+    sessionKey?: string
     data?: { text?: string; delta?: string }
     stream?: string
+    runId?: string
+    seq?: number
+    ts?: number
     state?: string
     message?: { content?: unknown }
     errorMessage?: string
