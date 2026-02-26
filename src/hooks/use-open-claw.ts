@@ -266,8 +266,7 @@ export function useOpenClaw(
 
         // Route to active session only; skip background sessions
         const isActive =
-          !eventSessionKey ||
-          eventSessionKey === currentSessionKeyRef.current
+          !eventSessionKey || eventSessionKey === currentSessionKeyRef.current
         if (!isActive) return
 
         // Only process assistant stream
@@ -283,8 +282,7 @@ export function useOpenClaw(
         const state = payload?.state
 
         const isActive =
-          !eventSessionKey ||
-          eventSessionKey === currentSessionKeyRef.current
+          !eventSessionKey || eventSessionKey === currentSessionKeyRef.current
 
         switch (state) {
           case 'delta': {
