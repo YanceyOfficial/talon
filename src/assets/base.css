@@ -306,7 +306,7 @@
       }
 
       p {
-        @apply mb-1.5;
+        @apply mb-1.5 last:mb-0;
       }
 
       hr {
@@ -315,15 +315,15 @@
 
       ol,
       ul {
-        @apply mb-1.5 space-y-0.5 pl-4;
+        @apply mb-1.5 space-y-0.5 pl-4 last:mb-0;
       }
 
       pre {
-        @apply my-1.5;
+        @apply my-1.5 last:mb-0;
       }
 
       blockquote {
-        @apply my-1.5 px-2 py-1;
+        @apply my-1.5 px-2 py-1 last:mb-0;
       }
 
       code:not(pre code) {

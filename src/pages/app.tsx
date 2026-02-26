@@ -250,7 +250,7 @@ function App() {
           {/* Messages area - Draggable */}
           <div
             ref={chatContainerRef}
-            className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent min-h-0 flex-1 space-y-1.5 overflow-y-auto px-4 py-3"
+            className="no-scrollbar scrollbar-track-transparent min-h-0 flex-1 space-y-1.5 overflow-y-auto px-4 py-3"
           >
             {!hasMessages && !isStreaming && (
               <div className="text-xs leading-relaxed text-gray-700">
@@ -265,7 +265,7 @@ function App() {
               <div key={message.id} className="animate-slide-in">
                 {message.role === 'user' ? (
                   <div className="flex justify-end">
-                    <div className="bg-card border-border max-w-[85%] rounded-lg border px-3 py-2 text-xs leading-relaxed">
+                    <div className="bg-card border-border max-w-[85%] rounded-lg border px-3 py-2 text-sm leading-relaxed">
                       <Markdown
                         content={message.content}
                         className="markdown-compact"
@@ -273,7 +273,7 @@ function App() {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-xs leading-relaxed text-gray-800">
+                  <div className="text-sm leading-relaxed text-gray-800">
                     <Markdown
                       content={message.content}
                       className="markdown-compact"
