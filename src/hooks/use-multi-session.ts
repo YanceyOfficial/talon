@@ -506,14 +506,11 @@ export function useMultiSessionOpenClaw() {
 
   // ─── Auto-switch on background session completion ─────────────────────────
   // Keep callback ref current every render so it always closes over the latest
-  // sessions list and switchSession function.
+  // switchToSessionKey (handles both known sessions and cron/transient keys).
   useEffect(() => {
-    onBackgroundSessionFinalRef.current = async (sessionKey: string) => {
-      console.log('[Session] Background session completed, switching to:', sessionKey)
-      const session = sessions.find((s) => s.sessionKey === sessionKey)
-      if (session) {
-        await switchSession(session.id)
-      }
+    onBackgroundSessionFinalRef.current = async (key: string) => {
+      console.log('[Session] Background session completed, switching to:', key)
+      await switchToSessionKey(key)
     }
   })
 
