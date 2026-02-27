@@ -1,6 +1,7 @@
 import { ClippyState } from '@/types/clippy'
 import { DotLottie, DotLottieReact } from '@lottiefiles/dotlottie-react'
 import { useEffect, useRef } from 'react'
+import ClippyLottie from '@/assets/Clippy.lottie?url'
 
 interface ClippyAvatarProps {
   state: ClippyState
@@ -76,7 +77,7 @@ export function ClippyAvatar({ state, size = 150 }: ClippyAvatarProps) {
       }}
     >
       <DotLottieReact
-        src="/src/assets/Clippy.lottie"
+        src={ClippyLottie}
         loop
         autoplay
         dotLottieRefCallback={(ref) => {
