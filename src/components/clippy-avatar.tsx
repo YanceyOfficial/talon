@@ -1,7 +1,9 @@
 import { ClippyState } from '@/types/clippy'
-import { DotLottie, DotLottieReact } from '@lottiefiles/dotlottie-react'
+import { DotLottie, DotLottieReact, setWasmUrl } from '@lottiefiles/dotlottie-react'
 import { useEffect, useRef } from 'react'
 import ClippyLottie from '@/assets/Clippy.lottie?url'
+
+setWasmUrl('/dotlottie-player.wasm')
 
 interface ClippyAvatarProps {
   state: ClippyState

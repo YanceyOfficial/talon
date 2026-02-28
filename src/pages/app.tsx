@@ -11,7 +11,7 @@ import { migrateFromLocalStorage } from '@/lib/store'
 import { openChatWindow, openSettingsWindow } from '@/lib/windows'
 import { ChatMessage, ClippyState } from '@/types/clippy'
 import { ConnectionStatus, MessageRole } from '@/types/openclaw'
-import { emit, listen } from '@tauri-apps/api/event'
+import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { ArrowRight, Maximize, Settings } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -117,11 +117,6 @@ function App() {
     textarea.style.height = 'auto'
     textarea.style.height = `${Math.min(textarea.scrollHeight, TEXTAREA_MAX_HEIGHT)}px`
   }, [input])
-
-  // Emit status changes to backend for tray icon update
-  useEffect(() => {
-    emit('status-changed', { status })
-  }, [status])
 
   // Initialize: migrate from localStorage on first load
   useEffect(() => {
