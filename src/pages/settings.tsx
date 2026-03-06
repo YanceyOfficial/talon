@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useMultiSessionOpenClaw } from '@/hooks/use-multi-session'
 import { toAgentId } from '@/lib/session-manager'
 import { getSettings, saveSettings, type AppSettings } from '@/lib/store'
+import { type GatewaySession } from '@/types/gateway'
 import { ConnectionStatus } from '@/types/openclaw'
 import { SessionType } from '@/types/session'
 import { emit } from '@tauri-apps/api/event'
@@ -101,7 +102,9 @@ export function SettingsPage() {
   })
 
   // All gateway sessions (from sessions.list), for hierarchical display
-  const [allGatewaySessions, setAllGatewaySessions] = useState<string[]>([])
+  const [allGatewaySessions, setAllGatewaySessions] = useState<
+    GatewaySession[]
+  >([])
   const [sessionsListLoading, setSessionsListLoading] = useState(false)
 
   // Preview of the session key that will be created (based on name)
@@ -111,11 +114,11 @@ export function SettingsPage() {
 
   // Group gateway sessions by agentId (second segment of key)
   const sessionsByAgent = useMemo(() => {
-    const map: Record<string, string[]> = {}
-    for (const key of allGatewaySessions) {
-      const agentId = key.split(':')[1] ?? 'unknown'
+    const map: Record<string, GatewaySession[]> = {}
+    for (const session of allGatewaySessions) {
+      const agentId = session.key.split(':')[1] ?? 'unknown'
       if (!map[agentId]) map[agentId] = []
-      map[agentId].push(key)
+      map[agentId].push(session)
     }
     return map
   }, [allGatewaySessions])
@@ -132,10 +135,10 @@ export function SettingsPage() {
       setSessionsListLoading(true)
       try {
         const response = (await listGatewaySessions()) as {
-          payload?: { sessions?: Array<{ key: string }> }
+          payload?: { sessions?: GatewaySession[] }
         }
-        const keys = response?.payload?.sessions?.map((s) => s.key) ?? []
-        setAllGatewaySessions(keys)
+        const sessions = response?.payload?.sessions ?? []
+        setAllGatewaySessions(sessions)
       } catch (error) {
         console.error('[Settings] Failed to fetch sessions list:', error)
       } finally {
@@ -244,10 +247,10 @@ export function SettingsPage() {
   //   }
   // }
 
-  const handleSwitchToSessionKey = async (key: string) => {
+  const handleSwitchToSessionKey = async (key: string, label?: string) => {
     try {
       console.log('[Settings] Switching to session key:', key)
-      await switchToSessionKey(key)
+      await switchToSessionKey(key, label)
       setActiveSessionKey(key)
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
@@ -335,12 +338,12 @@ export function SettingsPage() {
                       return (
                         <div className="bg-primary/5 border-primary/20 flex items-center gap-3 rounded-lg border p-3">
                           <div className="min-w-0 flex-1">
-                            <p className="font-medium">{cur.name}</p>
-                            {cur.description && (
-                              <p className="text-muted-foreground text-xs">
-                                {cur.description}
-                              </p>
-                            )}
+                            <p className="font-medium">
+                              {cur.label ?? cur.name}
+                            </p>
+                            <p className="text-muted-foreground mt-0.5 font-mono text-xs">
+                              {cur.sessionKey}
+                            </p>
                           </div>
                         </div>
                       )
@@ -378,10 +381,10 @@ export function SettingsPage() {
                         .map((session) => {
                           const agentId = session.sessionKey.split(':')[1] ?? ''
                           const agentSessions = sessionsByAgent[agentId] ?? [
-                            session.sessionKey
+                            { key: session.sessionKey }
                           ]
                           const isAgentActive = agentSessions.some(
-                            (k) => k === activeSessionKey
+                            (s) => s.key === activeSessionKey
                           )
 
                           return (
@@ -412,25 +415,27 @@ export function SettingsPage() {
                                     <Skeleton className="h-3 w-32" />
                                   </div>
                                 ) : (
-                                  agentSessions.map((sessionKey) => {
-                                    const sessionType = sessionKey
+                                  agentSessions.map((gs) => {
+                                    const sessionType = gs.key
                                       .split(':')
                                       .slice(2)
                                       .join(':')
+                                    const displayLabel =
+                                      gs.label ?? gs.displayName ?? sessionType
                                     const isKeyActive =
-                                      sessionKey === activeSessionKey
+                                      gs.key === activeSessionKey
 
                                     return (
                                       <div
-                                        key={sessionKey}
+                                        key={gs.key}
                                         className={`flex items-center justify-between px-4 py-2 ${
                                           isKeyActive ? 'bg-primary/5' : ''
                                         }`}
                                       >
                                         <div className="min-w-0 flex-1">
                                           <div className="flex items-center gap-2">
-                                            <p className="text-muted-foreground truncate font-mono text-xs">
-                                              {sessionType}
+                                            <p className="text-muted-foreground truncate text-xs">
+                                              {displayLabel}
                                             </p>
                                             {isKeyActive && (
                                               <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
@@ -446,7 +451,8 @@ export function SettingsPage() {
                                             className="h-6 shrink-0 text-xs"
                                             onClick={() =>
                                               handleSwitchToSessionKey(
-                                                sessionKey
+                                                gs.key,
+                                                gs.label ?? gs.displayName
                                               )
                                             }
                                           >

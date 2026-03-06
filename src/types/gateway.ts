@@ -106,8 +106,21 @@ export interface GatewayAgentsListResponse {
   }
 }
 
+export interface GatewaySession {
+  key: string
+  label?: string
+  displayName?: string
+  kind?: string
+  chatType?: string
+  model?: string
+  modelProvider?: string
+  contextTokens?: number
+  totalTokens?: number
+  updatedAt?: number
+}
+
 export interface GatewaySessionsListResponse {
   payload?: {
-    sessions?: Array<{ key: string }>
+    sessions?: GatewaySession[]
   }
 }

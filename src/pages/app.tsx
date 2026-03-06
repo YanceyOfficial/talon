@@ -211,7 +211,7 @@ function App() {
               }`}
             />
             <span className="max-w-30 truncate text-xs text-gray-600">
-              {activeSession?.name || 'Loading...'}
+              {activeSession?.label ?? activeSession?.name ?? 'Loading...'}
             </span>
           </div>
 

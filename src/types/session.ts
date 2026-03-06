@@ -11,6 +11,7 @@ export enum SessionType {
 export interface SessionConfig {
   id: string // Unique session identifier
   name: string // Display name
+  label?: string // Gateway-provided label (e.g., "Cron: US portfolio morning scan")
   type: SessionType
   sessionKey: string // OpenClaw session key (e.g., "agent:main:main") — assigned by Gateway on create
   description?: string

@@ -172,10 +172,11 @@ export function useMultiSessionOpenClaw() {
             const isDefault = a.id === defaultId
             const existing = prev.find((s) => s.sessionKey === sessionKey)
             if (existing) return existing
-            const displayName = a.identity?.name || a.name || a.id
+            const displayName =
+              a.identity?.name || a.name || (isDefault ? 'Default Chat' : a.id)
             return {
               id: isDefault ? 'main' : `agent-${a.id}`,
-              name: isDefault ? 'Default Chat' : displayName,
+              name: displayName,
               type: isDefault ? SessionType.MAIN : SessionType.TASK,
               sessionKey,
               active: true,
@@ -223,7 +224,10 @@ export function useMultiSessionOpenClaw() {
     // session-key-switched: switch to a cron/DM session key (no gateway sync)
     const unlistenSessionKey = listen('session-key-switched', (event) => {
       console.log('[Session] session-key-switched received')
-      const payload = event.payload as { sessionKey?: string } | null
+      const payload = event.payload as {
+        sessionKey?: string
+        label?: string
+      } | null
       if (!payload?.sessionKey) return
 
       const key = payload.sessionKey
@@ -237,6 +241,7 @@ export function useMultiSessionOpenClaw() {
         const transientSession: SessionConfig = {
           id: transientId,
           name: `${agentId} / ${sessionSuffix}`,
+          label: payload.label,
           type: SessionType.TASK,
           sessionKey: key,
           active: true,
@@ -457,9 +462,15 @@ export function useMultiSessionOpenClaw() {
 
   // Switch directly to a session key (for cron/DM sessions)
   const switchToSessionKey = useCallback(
-    async (key: string) => {
+    async (key: string, label?: string) => {
       const existing = sessions.find((s) => s.sessionKey === key)
       if (existing) {
+        // Update label if provided and not already set
+        if (label && !existing.label) {
+          setSessions((prev) =>
+            prev.map((s) => (s.sessionKey === key ? { ...s, label } : s))
+          )
+        }
         await switchSession(existing.id)
         return
       }
@@ -472,6 +483,7 @@ export function useMultiSessionOpenClaw() {
       const transientSession: SessionConfig = {
         id: transientId,
         name: `${agentId} / ${sessionSuffix}`,
+        label,
         type: SessionType.TASK,
         sessionKey: key,
         active: true,
@@ -491,7 +503,7 @@ export function useMultiSessionOpenClaw() {
         return [...filtered, transientSession]
       })
       setActiveSessionId(transientId)
-      await emit('session-key-switched', { sessionKey: key })
+      await emit('session-key-switched', { sessionKey: key, label })
     },
     [
       sessions,
