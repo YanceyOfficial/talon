@@ -19,12 +19,14 @@ export const STORE_KEYS = {
 export interface AppSettings {
   gatewayUrl: string
   token: string
+  hotkey?: string
 }
 
 // Default settings
 export const DEFAULT_SETTINGS: AppSettings = {
   gatewayUrl: 'ws://localhost:18789',
-  token: ''
+  token: '',
+  hotkey: ''
 }
 
 let storeInstance: Store | null = null

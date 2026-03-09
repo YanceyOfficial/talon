@@ -1,5 +1,5 @@
-import { applyTheme, getSystemPrefersDark } from '@/lib/theme'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { applyTheme, getSystemPrefersDark } from '@/lib/theme'
 import App from '@/pages/app'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
