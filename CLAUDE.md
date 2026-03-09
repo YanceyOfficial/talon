@@ -168,7 +168,21 @@ Based on shadcn/ui (Radix UI + Tailwind CSS v4). Key customizations:
 
 ## Critical Implementation Details
 
-### Fixing Loading State Issues
+### Loading State
+
+The orange loading dots have two phases:
+
+1. **Waiting for first token** (`isStreaming=true`, no in-progress assistant message): show dots
+2. **Tokens flowing** (`isStreaming=true`, assistant message with `isFinal=false` exists): hide dots
+
+Implemented via `isWaitingForFirstToken` in `app.tsx`:
+```ts
+const isWaitingForFirstToken =
+  isStreaming &&
+  !openClawMessages.some(
+    (msg) => msg.role === MessageRole.ASSISTANT && !msg.isFinal
+  )
+```
 
 When switching sessions, always reset `isStreaming` state to `false` in `switchToSession()` to prevent stuck loading indicators.
 

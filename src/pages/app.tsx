@@ -234,17 +234,15 @@ function App() {
   }
 
   // Status accent color
-  const accentClass = isStreaming
-    ? 'bg-amber-400'
-    : status === ConnectionStatus.CONNECTED
+  const accentClass =
+    status === ConnectionStatus.CONNECTED
       ? 'bg-emerald-400'
       : status === ConnectionStatus.ERROR
         ? 'bg-red-400'
         : 'bg-gray-400'
 
-  const accentTextClass = isStreaming
-    ? 'text-amber-400'
-    : status === ConnectionStatus.CONNECTED
+  const accentTextClass =
+    status === ConnectionStatus.CONNECTED
       ? 'text-emerald-400'
       : status === ConnectionStatus.ERROR
         ? 'text-red-400'
@@ -347,13 +345,14 @@ function App() {
             </div>
           ))}
 
-          {isStreaming && (
-            <div className="flex gap-1 py-1">
-              <span className="animate-typing h-1.5 w-1.5 rounded-full bg-amber-400" />
-              <span className="animate-typing h-1.5 w-1.5 rounded-full bg-amber-400 [animation-delay:0.2s]" />
-              <span className="animate-typing h-1.5 w-1.5 rounded-full bg-amber-400 [animation-delay:0.4s]" />
-            </div>
-          )}
+          {isStreaming &&
+            chatMessages[chatMessages.length - 1]?.role !== 'assistant' && (
+              <div className="flex gap-1 py-1">
+                <span className="animate-typing h-1.5 w-1.5 rounded-full bg-amber-400" />
+                <span className="animate-typing h-1.5 w-1.5 rounded-full bg-amber-400 [animation-delay:0.2s]" />
+                <span className="animate-typing h-1.5 w-1.5 rounded-full bg-amber-400 [animation-delay:0.4s]" />
+              </div>
+            )}
         </div>
 
         {/* Tool calls — only shown while streaming */}
