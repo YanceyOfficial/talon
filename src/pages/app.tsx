@@ -152,6 +152,10 @@ function App() {
     const mainWindow = getCurrentWindow()
     const appElement = document.getElementById('root')
 
+    window.addEventListener('blur', () => {
+      mainWindow.hide()
+    })
+
     const unlistenReady = listen('chat-window-ready', async () => {
       if (appElement) {
         appElement.style.transition = 'opacity 0.2s ease-out'

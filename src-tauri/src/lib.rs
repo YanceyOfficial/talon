@@ -1,5 +1,3 @@
-#[cfg(target_os = "macos")]
-use objc::{msg_send, sel, sel_impl};
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{Emitter, Manager};
@@ -38,8 +36,7 @@ pub fn run() {
                 MenuItem::with_id(app, "toggle", "Show / Hide Clippy", true, None::<&str>)?;
             let settings_item =
                 MenuItem::with_id(app, "settings", "Settings…", true, None::<&str>)?;
-            let quit_item =
-                MenuItem::with_id(app, "quit", "Quit Clippy", true, None::<&str>)?;
+            let quit_item = MenuItem::with_id(app, "quit", "Quit Clippy", true, None::<&str>)?;
 
             let menu = Menu::with_items(
                 app,
@@ -77,9 +74,7 @@ pub fn run() {
                                     let win_w = win_size.width as f64;
 
                                     let (tray_x, tray_y) = match &rect.position {
-                                        tauri::Position::Physical(p) => {
-                                            (p.x as f64, p.y as f64)
-                                        }
+                                        tauri::Position::Physical(p) => (p.x as f64, p.y as f64),
                                         tauri::Position::Logical(p) => (p.x, p.y),
                                     };
                                     let (tray_w, tray_h) = match &rect.size {
@@ -101,12 +96,12 @@ pub fn run() {
                                         x = x.max(8.0).min(screen_w - win_w - 8.0);
                                     }
 
-                                    let _ = window.set_position(
-                                        tauri::Position::Physical(tauri::PhysicalPosition {
+                                    let _ = window.set_position(tauri::Position::Physical(
+                                        tauri::PhysicalPosition {
                                             x: x as i32,
                                             y: y as i32,
-                                        }),
-                                    );
+                                        },
+                                    ));
                                 }
 
                                 let _ = window.show();
@@ -144,19 +139,6 @@ pub fn run() {
                         let _ = win.hide();
                     }
                 });
-            }
-
-            // ── Raise window level so panel floats above fullscreen apps ─────
-            // NSStatusWindowLevel (25) is used by menu-bar panels and appears
-            // above fullscreen spaces on macOS.
-            #[cfg(target_os = "macos")]
-            if let Some(window) = app.get_webview_window("main") {
-                if let Ok(ns_win_ptr) = window.ns_window() {
-                    let ns_win = ns_win_ptr as *mut objc::runtime::Object;
-                    unsafe {
-                        let _: () = msg_send![ns_win, setLevel: 25_i64];
-                    }
-                }
             }
 
             Ok(())
