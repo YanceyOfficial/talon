@@ -147,6 +147,26 @@ function App() {
     }
   }, [activeSession])
 
+  // Auto-focus textarea when window gains focus
+  useEffect(() => {
+    const handleFocus = () => {
+      textareaRef.current?.focus()
+    }
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [])
+
+  // Esc to hide the panel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        getCurrentWindow().hide()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   // Fade in/out when chat window opens/closes
   useEffect(() => {
     const mainWindow = getCurrentWindow()
@@ -224,9 +244,21 @@ function App() {
   const hasMessages = chatMessages.length > 0
 
   return (
-    <div className="flex h-full w-full bg-transparent p-3">
+    <div className="flex h-full w-full flex-col bg-transparent px-3 pb-3">
+      {/* Caret pointing up toward tray icon */}
+      <div className="flex h-3 shrink-0 items-end justify-center">
+        <div
+          className="h-0 w-0"
+          style={{
+            borderLeft: '8px solid transparent',
+            borderRight: '8px solid transparent',
+            borderBottom: '8px solid var(--card)',
+            filter: 'drop-shadow(0 -1px 0.5px oklch(0 0 0 / 12%))'
+          }}
+        />
+      </div>
       {/* Widget Card */}
-      <div className="widget-card border-border/40 bg-card/95 relative flex h-full w-full flex-col overflow-hidden rounded-3xl border">
+      <div className="widget-card border-border/40 bg-card/95 relative flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-3xl border">
         {/* Header */}
         <div
           className="border-border/40 flex shrink-0 items-center gap-2.5 border-b px-4 py-3"

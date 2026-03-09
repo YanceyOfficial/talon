@@ -2,7 +2,6 @@ use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{Emitter, Manager};
 
-/// Reload a webview window by label (used to sync theme changes across windows).
 #[tauri::command]
 fn reload_window(app: tauri::AppHandle, label: String) {
     if let Some(window) = app.get_webview_window(&label) {
@@ -10,7 +9,6 @@ fn reload_window(app: tauri::AppHandle, label: String) {
     }
 }
 
-/// Called from frontend when connection status changes — updates tray tooltip.
 #[tauri::command]
 fn update_tray_tooltip(app: tauri::AppHandle, status: String) {
     if let Some(tray) = app.tray_by_id("main") {
@@ -24,6 +22,8 @@ fn update_tray_tooltip(app: tauri::AppHandle, status: String) {
     }
 }
 
+
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -31,21 +31,32 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            // ── Tray menu ────────────────────────────────────────────────────
-            let show_hide =
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_always_on_top(true);
+                let _ = window.set_visible_on_all_workspaces(true);
+
+                let win = window.clone();
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::Focused(false) = event {
+                        let _ = win.hide();
+                    }
+                });
+            }
+
+            // ---------- Tray Menu ----------
+            let toggle =
                 MenuItem::with_id(app, "toggle", "Show / Hide Clippy", true, None::<&str>)?;
-            let settings_item =
-                MenuItem::with_id(app, "settings", "Settings…", true, None::<&str>)?;
-            let quit_item = MenuItem::with_id(app, "quit", "Quit Clippy", true, None::<&str>)?;
+            let settings = MenuItem::with_id(app, "settings", "Settings…", true, None::<&str>)?;
+            let quit = MenuItem::with_id(app, "quit", "Quit Clippy", true, None::<&str>)?;
 
             let menu = Menu::with_items(
                 app,
                 &[
-                    &show_hide,
+                    &toggle,
                     &PredefinedMenuItem::separator(app)?,
-                    &settings_item,
+                    &settings,
                     &PredefinedMenuItem::separator(app)?,
-                    &quit_item,
+                    &quit,
                 ],
             )?;
 
@@ -53,7 +64,6 @@ pub fn run() {
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
                 .tooltip("Clippy")
-                // Left-click toggles the panel; right-click shows the menu
                 .show_menu_on_left_click(false)
                 .on_tray_icon_event(|tray, event| {
                     if let TrayIconEvent::Click {
@@ -64,49 +74,44 @@ pub fn run() {
                     } = event
                     {
                         let app = tray.app_handle();
+
                         if let Some(window) = app.get_webview_window("main") {
                             if window.is_visible().unwrap_or(false) {
                                 let _ = window.hide();
-                            } else {
-                                // Position panel just below the tray icon, centered on it.
-                                // rect.position / rect.size are enums — extract as f64.
-                                if let Ok(win_size) = window.outer_size() {
-                                    let win_w = win_size.width as f64;
+                                return;
+                            }
 
-                                    let (tray_x, tray_y) = match &rect.position {
-                                        tauri::Position::Physical(p) => (p.x as f64, p.y as f64),
-                                        tauri::Position::Logical(p) => (p.x, p.y),
-                                    };
-                                    let (tray_w, tray_h) = match &rect.size {
-                                        tauri::Size::Physical(s) => {
-                                            (s.width as f64, s.height as f64)
-                                        }
-                                        tauri::Size::Logical(s) => (s.width, s.height),
-                                    };
+                            // ---------- 定位到 tray icon 下方 ----------
+                            if let Ok(win_size) = window.outer_size() {
+                                let win_w = win_size.width as f64;
 
-                                    let tray_center_x = tray_x + tray_w / 2.0;
-                                    let tray_bottom = tray_y + tray_h;
+                                let (tray_x, tray_y) = match rect.position {
+                                    tauri::Position::Physical(p) => (p.x as f64, p.y as f64),
+                                    tauri::Position::Logical(p) => (p.x, p.y),
+                                };
 
-                                    let mut x = tray_center_x - win_w / 2.0;
-                                    let y = tray_bottom + 8.0;
+                                let (tray_w, tray_h) = match rect.size {
+                                    tauri::Size::Physical(s) => (s.width as f64, s.height as f64),
+                                    tauri::Size::Logical(s) => (s.width, s.height),
+                                };
 
-                                    // Clamp to screen width
-                                    if let Ok(Some(monitor)) = window.current_monitor() {
-                                        let screen_w = monitor.size().width as f64;
-                                        x = x.max(8.0).min(screen_w - win_w - 8.0);
-                                    }
+                                let mut x = tray_x + tray_w / 2.0 - win_w / 2.0;
+                                let y = tray_y + tray_h + 8.0;
 
-                                    let _ = window.set_position(tauri::Position::Physical(
-                                        tauri::PhysicalPosition {
-                                            x: x as i32,
-                                            y: y as i32,
-                                        },
-                                    ));
+                                if let Ok(Some(monitor)) = window.current_monitor() {
+                                    let screen_w = monitor.size().width as f64;
+                                    x = x.max(8.0).min(screen_w - win_w - 8.0);
                                 }
 
-                                let _ = window.show();
-                                let _ = window.set_focus();
+                                let _ = window.set_position(tauri::Position::Physical(
+                                    tauri::PhysicalPosition {
+                                        x: x as i32,
+                                        y: y as i32,
+                                    },
+                                ));
                             }
+                            let _ = window.show();
+                            let _ = window.set_focus();
                         }
                     }
                 })
@@ -121,25 +126,18 @@ pub fn run() {
                             }
                         }
                     }
+
                     "settings" => {
                         let _ = app.emit("tray-open-settings", ());
                     }
+
                     "quit" => {
                         app.exit(0);
                     }
+
                     _ => {}
                 })
                 .build(app)?;
-
-            // ── Auto-hide panel when it loses focus ──────────────────────────
-            if let Some(window) = app.get_webview_window("main") {
-                let win = window.clone();
-                window.on_window_event(move |event| {
-                    if let tauri::WindowEvent::Focused(false) = event {
-                        let _ = win.hide();
-                    }
-                });
-            }
 
             Ok(())
         })
