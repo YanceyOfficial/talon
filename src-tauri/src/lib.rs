@@ -54,11 +54,13 @@ pub fn run() {
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
                 .tooltip("Clippy")
+                // Left-click toggles the panel; right-click shows the menu
                 .show_menu_on_left_click(false)
                 .on_tray_icon_event(|tray, event| {
                     if let TrayIconEvent::Click {
                         button: MouseButton::Left,
                         button_state: MouseButtonState::Up,
+                        rect,
                         ..
                     } = event
                     {
@@ -67,6 +69,44 @@ pub fn run() {
                             if window.is_visible().unwrap_or(false) {
                                 let _ = window.hide();
                             } else {
+                                // Position panel just below the tray icon, centered on it.
+                                // rect.position / rect.size are enums — extract as f64.
+                                if let Ok(win_size) = window.outer_size() {
+                                    let win_w = win_size.width as f64;
+
+                                    let (tray_x, tray_y) = match &rect.position {
+                                        tauri::Position::Physical(p) => {
+                                            (p.x as f64, p.y as f64)
+                                        }
+                                        tauri::Position::Logical(p) => (p.x, p.y),
+                                    };
+                                    let (tray_w, tray_h) = match &rect.size {
+                                        tauri::Size::Physical(s) => {
+                                            (s.width as f64, s.height as f64)
+                                        }
+                                        tauri::Size::Logical(s) => (s.width, s.height),
+                                    };
+
+                                    let tray_center_x = tray_x + tray_w / 2.0;
+                                    let tray_bottom = tray_y + tray_h;
+
+                                    let mut x = tray_center_x - win_w / 2.0;
+                                    let y = tray_bottom + 8.0;
+
+                                    // Clamp to screen width
+                                    if let Ok(Some(monitor)) = window.current_monitor() {
+                                        let screen_w = monitor.size().width as f64;
+                                        x = x.max(8.0).min(screen_w - win_w - 8.0);
+                                    }
+
+                                    let _ = window.set_position(
+                                        tauri::Position::Physical(tauri::PhysicalPosition {
+                                            x: x as i32,
+                                            y: y as i32,
+                                        }),
+                                    );
+                                }
+
                                 let _ = window.show();
                                 let _ = window.set_focus();
                             }
@@ -94,22 +134,14 @@ pub fn run() {
                 })
                 .build(app)?;
 
-            // ── Position main window at bottom-right corner ──────────────────
+            // ── Auto-hide panel when it loses focus ──────────────────────────
             if let Some(window) = app.get_webview_window("main") {
-                if let Ok(monitor) = window.current_monitor() {
-                    if let Some(monitor) = monitor {
-                        let screen_size = monitor.size();
-                        let window_size = window.outer_size().unwrap_or_default();
-                        let margin = 20;
-                        let x =
-                            screen_size.width as i32 - window_size.width as i32 - margin;
-                        let y =
-                            screen_size.height as i32 - window_size.height as i32 - margin;
-                        let _ = window.set_position(tauri::Position::Physical(
-                            tauri::PhysicalPosition { x, y },
-                        ));
+                let win = window.clone();
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::Focused(false) = event {
+                        let _ = win.hide();
                     }
-                }
+                });
             }
 
             Ok(())
