@@ -20,6 +20,9 @@
     "core:webview:default",
     "core:webview:allow-create-webview",
     "core:webview:allow-create-webview-window",
-    "store:default"
+    "store:default",
+    "global-shortcut:allow-register",
+    "global-shortcut:allow-unregister-all",
+    "global-shortcut:allow-is-registered"
   ]
 }
