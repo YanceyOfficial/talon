@@ -678,6 +678,27 @@ export function SettingsPage() {
 
             {activeNav === 'Connection' && (
               <div className="max-w-3xl space-y-4">
+                <div className="flex items-start gap-3 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-900 dark:bg-green-950/30">
+                  <Info className="mt-0.5 h-4 w-4 shrink-0 text-green-600 dark:text-green-500" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-xs font-medium text-green-900 dark:text-green-100">
+                      First-time setup
+                    </p>
+                    <ol className="list-inside list-decimal space-y-0.5 text-xs text-green-700 dark:text-green-300">
+                      <li>
+                        Enter your Gateway URL and Token below and click Save
+                        Changes
+                      </li>
+                      <li>
+                        On the machine where OpenClaw is deployed, run:{' '}
+                        <code className="rounded bg-green-100 px-1 dark:bg-green-900">
+                          openclaw devices approve
+                        </code>
+                      </li>
+                      <li>Restart Talon</li>
+                    </ol>
+                  </div>
+                </div>
                 <div className="space-y-4 rounded-lg border p-4">
                   <div className="space-y-2">
                     <Label htmlFor="gateway-url">Gateway URL</Label>
@@ -722,45 +743,12 @@ export function SettingsPage() {
                       </Button>
                     </div>
                     <p className="text-muted-foreground text-xs">
-                      Optional: Your OpenClaw authentication token
+                      Your OpenClaw authentication token
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950/30">
-                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-500" />
-                    <div className="flex-1 space-y-1">
-                      <p className="text-xs font-medium text-blue-900 dark:text-blue-100">
-                        Local OpenClaw
-                      </p>
-                      <p className="text-xs text-blue-700 dark:text-blue-300">
-                        Set Gateway URL to{' '}
-                        <code className="rounded bg-blue-100 px-1 dark:bg-blue-900">
-                          ws://localhost:18789
-                        </code>{' '}
-                        and fill in your Gateway Token.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/30">
-                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-500" />
-                    <div className="flex-1 space-y-1">
-                      <p className="text-xs font-medium text-amber-900 dark:text-amber-100">
-                        Remote via Tailscale
-                      </p>
-                      <p className="text-xs text-amber-700 dark:text-amber-300">
-                        Set Gateway URL to your Tailscale address. After first
-                        connect, run on the server:
-                      </p>
-                      <code className="mt-1 block rounded bg-amber-100 px-2 py-1 font-mono text-xs text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                        openclaw devices approve
-                      </code>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between border-t pt-4">
+                <div className="flex items-center justify-between pt-4">
                   <Button variant="outline" onClick={handleReset}>
                     Reset to Defaults
                   </Button>
