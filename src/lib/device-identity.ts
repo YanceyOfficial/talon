@@ -64,7 +64,7 @@ function toHex(buffer: ArrayBuffer): string {
 
 // Generate SHA-256 fingerprint from public key (hex format, ClawControl compatible)
 async function fingerprintPublicKey(publicKey: Uint8Array): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest('SHA-256', publicKey)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', publicKey as BufferSource)
   return toHex(hashBuffer)
 }
 
