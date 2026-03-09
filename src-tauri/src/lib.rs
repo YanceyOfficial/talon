@@ -1,6 +1,7 @@
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{Emitter, Manager};
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
 #[tauri::command]
 fn reload_window(app: tauri::AppHandle, label: String) {
@@ -13,10 +14,10 @@ fn reload_window(app: tauri::AppHandle, label: String) {
 fn update_tray_tooltip(app: tauri::AppHandle, status: String) {
     if let Some(tray) = app.tray_by_id("main") {
         let tooltip = match status.as_str() {
-            "connected" => "Clippy · Connected",
-            "connecting" => "Clippy · Connecting…",
-            "error" => "Clippy · Connection Error",
-            _ => "Clippy",
+            "connected" => "Talon · Connected",
+            "connecting" => "Talon · Connecting…",
+            "error" => "Talon · Connection Error",
+            _ => "Talon",
         };
         let _ = tray.set_tooltip(Some(tooltip));
     }
@@ -24,11 +25,42 @@ fn update_tray_tooltip(app: tauri::AppHandle, status: String) {
 
 
 
+#[tauri::command]
+fn set_global_shortcut(app: tauri::AppHandle, shortcut: String) -> Result<(), String> {
+    // Unregister all previous shortcuts
+    app.global_shortcut()
+        .unregister_all()
+        .map_err(|e| e.to_string())?;
+
+    if shortcut.is_empty() {
+        return Ok(());
+    }
+
+    let app_clone = app.clone();
+    app.global_shortcut()
+        .on_shortcut(shortcut.as_str(), move |_app, _sc, event| {
+            if event.state == ShortcutState::Pressed {
+                if let Some(window) = app_clone.get_webview_window("main") {
+                    if window.is_visible().unwrap_or(false) {
+                        let _ = window.hide();
+                    } else {
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                    }
+                }
+            }
+        })
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             if let Some(window) = app.get_webview_window("main") {
@@ -45,9 +77,9 @@ pub fn run() {
 
             // ---------- Tray Menu ----------
             let toggle =
-                MenuItem::with_id(app, "toggle", "Show / Hide Clippy", true, None::<&str>)?;
+                MenuItem::with_id(app, "toggle", "Show / Hide Talon", true, None::<&str>)?;
             let settings = MenuItem::with_id(app, "settings", "Settings…", true, None::<&str>)?;
-            let quit = MenuItem::with_id(app, "quit", "Quit Clippy", true, None::<&str>)?;
+            let quit = MenuItem::with_id(app, "quit", "Quit Talon", true, None::<&str>)?;
 
             let menu = Menu::with_items(
                 app,
@@ -63,7 +95,7 @@ pub fn run() {
             TrayIconBuilder::with_id("main")
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
-                .tooltip("Clippy")
+                .tooltip("Talon")
                 .show_menu_on_left_click(false)
                 .on_tray_icon_event(|tray, event| {
                     if let TrayIconEvent::Click {
@@ -141,7 +173,7 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![reload_window, update_tray_tooltip])
+        .invoke_handler(tauri::generate_handler![reload_window, update_tray_tooltip, set_global_shortcut])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

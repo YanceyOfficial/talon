@@ -12,15 +12,16 @@ import {
   SidebarProvider
 } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useTheme } from '@/hooks/use-theme'
 import { useMultiSessionOpenClaw } from '@/hooks/use-multi-session'
-import { cn } from '@/lib/utils'
+import { useTheme } from '@/hooks/use-theme'
 import { toAgentId } from '@/lib/session-manager'
 import { getSettings, saveSettings, type AppSettings } from '@/lib/store'
 import { type Theme } from '@/lib/theme'
+import { cn } from '@/lib/utils'
 import { type GatewaySession } from '@/types/gateway'
 import { ConnectionStatus } from '@/types/openclaw'
 import { SessionType } from '@/types/session'
+import { invoke } from '@tauri-apps/api/core'
 import { emit } from '@tauri-apps/api/event'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import {
@@ -28,6 +29,7 @@ import {
   Eye,
   EyeOff,
   Info,
+  Keyboard,
   Layers,
   Link as LinkIcon,
   Loader2,
@@ -50,16 +52,80 @@ const initialSessionKey = new URLSearchParams(window.location.search).get(
 const navItems = [
   { name: 'Agents', icon: Layers },
   { name: 'Appearance', icon: Palette },
+  { name: 'Shortcuts', icon: Keyboard },
   { name: 'Connection', icon: LinkIcon },
   { name: 'About', icon: SettingsIcon }
 ]
+
+// Maps a KeyboardEvent to a Tauri-compatible shortcut string
+function eventToShortcut(e: KeyboardEvent): string | null {
+  const modifiers: string[] = []
+  if (e.metaKey || e.ctrlKey) modifiers.push('CommandOrControl')
+  if (e.altKey) modifiers.push('Alt')
+  if (e.shiftKey) modifiers.push('Shift')
+  if (['Meta', 'Control', 'Alt', 'Shift'].includes(e.key)) return null
+  if (modifiers.length === 0) return null
+  const key =
+    e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key
+  return [...modifiers, key].join('+')
+}
+
+function ShortcutRecorder({
+  value,
+  onChange
+}: {
+  value: string
+  onChange: (v: string) => void
+}) {
+  const [recording, setRecording] = useState(false)
+
+  useEffect(() => {
+    if (!recording) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const sc = eventToShortcut(e)
+      if (!sc) return
+      onChange(sc)
+      setRecording(false)
+    }
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
+  }, [recording, onChange])
+
+  return (
+    <div className="flex gap-2">
+      <div
+        className={cn(
+          'flex-1 rounded-md border px-3 py-2 font-mono text-sm',
+          recording && 'border-primary animate-pulse'
+        )}
+      >
+        {recording ? 'Press shortcut…' : value || 'None'}
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setRecording((r) => !r)}
+      >
+        {recording ? 'Cancel' : 'Record'}
+      </Button>
+      {value && !recording && (
+        <Button variant="ghost" size="sm" onClick={() => onChange('')}>
+          <X className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
+  )
+}
 
 export function SettingsPage() {
   const { theme, setTheme } = useTheme()
 
   const [settings, setSettings] = useState<AppSettings>({
     gatewayUrl: '',
-    token: ''
+    token: '',
+    hotkey: ''
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -540,13 +606,17 @@ export function SettingsPage() {
                   <div>
                     <Label className="text-sm font-medium">Theme</Label>
                     <p className="text-muted-foreground mt-1 text-xs">
-                      Choose how Clippy looks. "System" follows your OS setting.
+                      Choose how Talon looks. "System" follows your OS setting.
                     </p>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {(
                       [
-                        { value: 'system' as Theme, label: 'System', icon: Monitor },
+                        {
+                          value: 'system' as Theme,
+                          label: 'System',
+                          icon: Monitor
+                        },
                         { value: 'light' as Theme, label: 'Light', icon: Sun },
                         { value: 'dark' as Theme, label: 'Dark', icon: Moon }
                       ] as const
@@ -566,6 +636,42 @@ export function SettingsPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {activeNav === 'Shortcuts' && (
+              <div className="max-w-3xl space-y-4">
+                <div className="space-y-4 rounded-lg border p-4">
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Toggle Panel Shortcut
+                    </Label>
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      Press this shortcut anywhere to show or hide the Talon
+                      panel. Requires at least one modifier key (⌘ / Ctrl / Alt
+                      / Shift).
+                    </p>
+                  </div>
+                  <ShortcutRecorder
+                    value={settings.hotkey ?? ''}
+                    onChange={async (sc) => {
+                      const next = { ...settings, hotkey: sc }
+                      setSettings(next)
+                      await saveSettings(next)
+                      await invoke('set_global_shortcut', {
+                        shortcut: sc
+                      }).catch(console.error)
+                      setSaved(true)
+                      setTimeout(() => setSaved(false), 2000)
+                    }}
+                  />
+                  {saved && (
+                    <div className="flex items-center gap-1.5 text-sm text-green-600">
+                      <Check className="h-4 w-4" />
+                      <span>Saved</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -684,7 +790,7 @@ export function SettingsPage() {
             {activeNav === 'About' && (
               <div className="max-w-3xl space-y-2 rounded-lg border p-4">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Clippy Version</span>
+                  <span className="text-muted-foreground">Talon Version</span>
                   <span className="font-mono">v{version}</span>
                 </div>
                 <div className="flex justify-between border-t pt-2 text-sm">

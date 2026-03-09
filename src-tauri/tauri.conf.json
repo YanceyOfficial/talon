@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Clippy",
+  "productName": "Talon",
   "version": "0.1.0",
-  "identifier": "app.yancey.clippy",
+  "identifier": "app.yancey.talon",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Clippy",
+        "title": "Talon",
         "width": 380,
         "height": 480,
         "minWidth": 380,

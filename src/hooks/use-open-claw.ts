@@ -228,7 +228,7 @@ export function useOpenClaw(
                 scopes: config.scopes,
                 client: {
                   id: config.clientId,
-                  displayName: 'Clippy',
+                  displayName: 'Talon',
                   version: '1.0.0',
                   platform: 'desktop',
                   mode: config.clientMode

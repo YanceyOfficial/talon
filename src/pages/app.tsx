@@ -7,11 +7,11 @@ import {
 } from '@/components/ui/tooltip'
 import { useMultiSessionOpenClaw } from '@/hooks/use-multi-session'
 import { useTheme } from '@/hooks/use-theme'
-import { migrateFromLocalStorage } from '@/lib/store'
+import { getSettings, migrateFromLocalStorage } from '@/lib/store'
 import { cn } from '@/lib/utils'
 import { openChatWindow, openSettingsWindow } from '@/lib/windows'
-import { ChatMessage } from '@/types/clippy'
 import { ConnectionStatus, MessageRole, ToolCallBlock } from '@/types/openclaw'
+import { ChatMessage } from '@/types/talon'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
@@ -130,6 +130,15 @@ function App() {
   // One-time migration
   useEffect(() => {
     migrateFromLocalStorage()
+  }, [])
+
+  // Register saved global shortcut on startup
+  useEffect(() => {
+    getSettings().then((s) => {
+      if (s.hotkey) {
+        invoke('set_global_shortcut', { shortcut: s.hotkey }).catch(() => {})
+      }
+    })
   }, [])
 
   // Update tray tooltip when connection status changes
@@ -314,7 +323,7 @@ function App() {
         >
           {!hasMessages && !isStreaming && (
             <div className="text-muted-foreground text-xs leading-relaxed">
-              <p className="text-foreground font-semibold">Hi, I'm Clippy.</p>
+              <p className="text-foreground font-semibold">Hi, I'm Talon.</p>
               <p className="mt-0.5">How can I help you today?</p>
             </div>
           )}

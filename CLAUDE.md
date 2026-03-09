@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Clippy is a desktop AI assistant built with Tauri 2 + React. It provides a floating always-on-top chat interface that connects to an OpenClaw Gateway via WebSocket for AI conversation. The app supports multiple sessions (task-based contexts), system notifications, and auto-switching to sessions with new messages.
+Talon is a desktop AI assistant built with Tauri 2 + React. It provides a floating always-on-top chat interface that connects to an OpenClaw Gateway via WebSocket for AI conversation. The app supports multiple sessions (task-based contexts), system notifications, and auto-switching to sessions with new messages.
 
 ## Development Commands
 
@@ -141,7 +141,7 @@ Features: GFM, math (KaTeX), syntax highlighting (atomOneDark/Light), frontmatte
 
 Based on shadcn/ui (Radix UI + Tailwind CSS v4). Key customizations:
 
-- `ClippyAvatar`: Lottie animation with state-based variants (idle, thinking, speaking, error)
+- `TalonAvatar`: Lottie animation with state-based variants (idle, thinking, speaking, error)
 - `MessageBubble`: Handles different message types (user, assistant, toolCall, toolResult) with structured content blocks
 - Compact styling for main window: smaller fonts, reduced spacing, `max-h-[380px]` bubble constraint
 
