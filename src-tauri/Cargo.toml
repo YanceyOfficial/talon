@@ -15,10 +15,10 @@ name = "talon_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2.5.6", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["macos-private-api", "tray-icon", "protocol-asset", "devtools"] }
+tauri = { version = "2.10.3", features = ["macos-private-api", "tray-icon", "protocol-asset", "devtools"] }
 tauri-plugin-opener = "2"
 tauri-plugin-notification = "2"
 serde = { version = "1", features = ["derive"] }
