@@ -1,3 +1,5 @@
+#[cfg(target_os = "macos")]
+use objc::{msg_send, sel, sel_impl};
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{Emitter, Manager};
@@ -142,6 +144,19 @@ pub fn run() {
                         let _ = win.hide();
                     }
                 });
+            }
+
+            // ── Raise window level so panel floats above fullscreen apps ─────
+            // NSStatusWindowLevel (25) is used by menu-bar panels and appears
+            // above fullscreen spaces on macOS.
+            #[cfg(target_os = "macos")]
+            if let Some(window) = app.get_webview_window("main") {
+                if let Ok(ns_win_ptr) = window.ns_window() {
+                    let ns_win = ns_win_ptr as *mut objc::runtime::Object;
+                    unsafe {
+                        let _: () = msg_send![ns_win, setLevel: 25_i64];
+                    }
+                }
             }
 
             Ok(())
