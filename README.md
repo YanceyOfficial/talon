@@ -71,7 +71,6 @@ The built app will be in `src-tauri/target/release/bundle/`.
 talon/
 ├── src/
 │   ├── components/           # React components
-│   │   ├── TalonAvatar.tsx  # Lottie animation controller
 │   │   ├── ChatBubble.tsx    # Message display
 │   │   └── InputBox.tsx      # User input
 │   ├── hooks/                # Custom React hooks
