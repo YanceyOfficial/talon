@@ -1,8 +1,8 @@
-# Clippy Architecture
+# Talon Architecture
 
 ## Overview
 
-A desktop AI assistant inspired by Microsoft Office Clippy, powered by OpenClaw.
+A desktop AI assistant inspired by Microsoft Office Talon, powered by OpenClaw.
 
 ## Tech Stack
 
@@ -16,10 +16,10 @@ A desktop AI assistant inspired by Microsoft Office Clippy, powered by OpenClaw.
 ## Project Structure
 
 ```
-clippy/
+talon/
 ├── src/
 │   ├── components/
-│   │   ├── ClippyAvatar.tsx      # Lottie animation controller
+│   │   ├── TalonAvatar.tsx      # Lottie animation controller
 │   │   ├── ChatBubble.tsx        # Message display
 │   │   ├── InputBox.tsx          # User input
 │   │   └── DragHandle.tsx        # Window drag functionality
@@ -33,7 +33,7 @@ clippy/
 │   │   ├── windowSnap.ts         # Magnetic snap to edges
 │   │   └── animations.ts         # Animation state mapping
 │   └── assets/
-│       ├── Clippy.lottie         # Main animation (use this one!)
+│       ├── Talon.lottie         # Main animation (use this one!)
 │       └── sounds/               # Sound effects
 ├── src-tauri/
 │   └── src/
@@ -47,7 +47,7 @@ clippy/
 ### Features
 
 - ✅ Small, draggable, always-on-top window (200x300)
-- ✅ Transparent background with Clippy avatar
+- ✅ Transparent background with Talon avatar
 - ✅ Simple text input + send button
 - ✅ Connect to OpenClaw Gateway via WebSocket
 - ✅ Display chat messages
@@ -57,7 +57,7 @@ clippy/
 ### Animation States
 
 ```typescript
-enum ClippyState {
+enum TalonState {
   IDLE, // Default waiting animation
   LISTENING, // User is typing
   THINKING, // Processing request (loading animation)
@@ -103,7 +103,7 @@ interface OpenClawMessage {
 
 ## Design Decisions
 
-### Why Clippy.lottie over Clippy.json?
+### Why Talon.lottie over Talon.json?
 
 - **Size**: 11KB vs 115KB (10x smaller)
 - **Format**: DotLottie is the modern standard

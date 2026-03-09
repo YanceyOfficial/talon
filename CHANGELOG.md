@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Clippy will be documented in this file.
+All notable changes to Talon will be documented in this file.
 
 ## [Unreleased]
 
@@ -8,11 +8,11 @@ All notable changes to Clippy will be documented in this file.
 
 #### Status Indicator Moved to Menubar
 
-- **Removed from window**: Status dot no longer displayed on Clippy avatar
+- **Removed from window**: Status dot no longer displayed on Talon avatar
 - **Added to menubar**: Connection status shown in menubar menu
 - **Menu structure**: Status displayed as first item (🟢/🟡/🔴)
 - **Real-time updates**: Event-driven updates from frontend to backend
-- **Cleaner UI**: Window now shows only Clippy and chat bubble
+- **Cleaner UI**: Window now shows only Talon and chat bubble
 
 ### Added - February 14, 2026
 
@@ -20,17 +20,17 @@ All notable changes to Clippy will be documented in this file.
 
 - **Removed white background**: Window is now fully transparent
 - **Smart backgrounds**: Only chat panel has background (white/95% opacity + blur)
-- **Floating design**: Clippy avatar appears to float on desktop
+- **Floating design**: Talon avatar appears to float on desktop
 - **Status indicator**: Small dot in top-left corner (green/yellow/red)
 - **Improved visuals**: Refined message bubbles, shadows, and spacing
 
 #### System Tray (Menubar) Integration
 
-- **Menubar icon**: Clippy icon appears in macOS menubar
+- **Menubar icon**: Talon icon appears in macOS menubar
 - **Click to toggle**: Left-click icon to show/hide window
 - **Context menu**: Right-click for options:
-  - Show Clippy
-  - Hide Clippy
+  - Show Talon
+  - Hide Talon
   - Quit
 - **Background operation**: App can run hidden in menubar
 
@@ -97,7 +97,7 @@ All notable changes to Clippy will be documented in this file.
 
 #### Components
 
-- `ClippyAvatar`: Animated Clippy with state-based animations
+- `TalonAvatar`: Animated Talon with state-based animations
 - `ChatBubble`: Message display with user/assistant distinction
 - `InputBox`: Text input with auto-resize and Enter to send
 - `useOpenClaw`: WebSocket hook for OpenClaw connection
@@ -181,9 +181,9 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed roadmap.
 
 ## Credits
 
-- **Original Clippy**: Microsoft Office Assistant
+- **Original Talon**: Microsoft Office Assistant
 - **AI Backend**: [OpenClaw](https://openclaw.ai/)
-- **Lottie Animation**: Microsoft Clippy Lottie files
+- **Lottie Animation**: Microsoft Talon Lottie files
 - **Development**: Yancey Leo + Claude Sonnet 4.5
 
 ---

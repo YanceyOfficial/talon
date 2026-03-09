@@ -1,10 +1,10 @@
-# Clippy Contributing Guide
+# Talon Contributing Guide
 
-Hi! We are really excited that you are interested in contributing to Clippy. Before submitting your contribution, please make sure to take a moment and read through the following guide:
+Hi! We are really excited that you are interested in contributing to Talon. Before submitting your contribution, please make sure to take a moment and read through the following guide:
 
 ## Repo Setup
 
-To develop and test the core `Clippy` package, please respect the [Tauri Guide](https://tauri.app/start/).
+To develop and test the core `Talon` package, please respect the [Tauri Guide](https://tauri.app/start/).
 
 ## Pull Request Guidelines
 
