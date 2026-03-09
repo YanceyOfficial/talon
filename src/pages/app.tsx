@@ -1,5 +1,4 @@
 import '@/assets/base.css'
-import { ClippyAvatar } from '@/components/clippy-avatar'
 import { Markdown } from '@/components/markdown'
 import {
   Tooltip,
@@ -7,20 +6,32 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip'
 import { useMultiSessionOpenClaw } from '@/hooks/use-multi-session'
+import { useTheme } from '@/hooks/use-theme'
 import { migrateFromLocalStorage } from '@/lib/store'
+import { cn } from '@/lib/utils'
 import { openChatWindow, openSettingsWindow } from '@/lib/windows'
-import { ChatMessage, ClippyState } from '@/types/clippy'
-import { ConnectionStatus, MessageRole } from '@/types/openclaw'
+import { ChatMessage } from '@/types/clippy'
+import { ConnectionStatus, MessageRole, ToolCallBlock } from '@/types/openclaw'
+import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { ArrowRight, Maximize, Settings } from 'lucide-react'
+import { ArrowUp, Maximize2, Settings } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-// Constants
 const TEXTAREA_MAX_HEIGHT = 80
-const SPEAKING_ANIMATION_DURATION = 2000
+
+function timeAgo(timestamp: number): string {
+  const diff = Math.floor((Date.now() - timestamp) / 1000)
+  if (diff < 5) return 'just now'
+  if (diff < 60) return `${diff}s ago`
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  return `${Math.floor(diff / 3600)}h ago`
+}
 
 function App() {
+  // Theme: loads stored preference, listens for system changes
+  useTheme()
+
   const {
     activeSession,
     status,
@@ -29,7 +40,6 @@ function App() {
     sendMessage
   } = useMultiSessionOpenClaw()
 
-  const [clippyState, setClippyState] = useState<ClippyState>(ClippyState.IDLE)
   const [input, setInput] = useState('')
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -37,7 +47,7 @@ function App() {
 
   const isConnected = status === ConnectionStatus.CONNECTED
 
-  // Convert OpenClaw messages to chat messages
+  // Convert OpenClaw messages to simple chat format
   const chatMessages: ChatMessage[] = useMemo(() => {
     return openClawMessages
       .filter(
@@ -45,18 +55,15 @@ function App() {
           msg.role === MessageRole.USER || msg.role === MessageRole.ASSISTANT
       )
       .map((msg, index): ChatMessage => {
-        // Extract text content from structured content
         let textContent = ''
         if (typeof msg.content === 'string') {
           textContent = msg.content
         } else if (Array.isArray(msg.content)) {
-          // Only extract text blocks for display (skip thinking and toolCall in main window)
           textContent = msg.content
             .filter((block) => block.type === 'text')
             .map((block) => ('text' in block ? block.text : '') || '')
             .join('\n')
         }
-
         return {
           id: `${msg.timestamp || 0}-${index}`,
           role: (msg.role === MessageRole.USER ? 'user' : 'assistant') as
@@ -66,42 +73,45 @@ function App() {
           timestamp: msg.timestamp || 0
         }
       })
-      .filter((msg) => msg.content.trim().length > 0) // Filter out empty messages
+      .filter((msg) => msg.content.trim().length > 0)
   }, [openClawMessages])
 
-  // Update Clippy state based on connection and streaming status
-  useEffect(() => {
-    // This effect derives UI state from props - safe to call setState here
-    /* eslint-disable react-hooks/set-state-in-effect */
-    if (status === ConnectionStatus.ERROR) {
-      setClippyState(ClippyState.ERROR)
-      return
+  // Extract tool calls from messages (shown during streaming)
+  const toolCallStats = useMemo(() => {
+    if (!isStreaming) return []
+    const counts: Record<string, { count: number; lastSeen: number }> = {}
+    for (const msg of openClawMessages) {
+      if (!Array.isArray(msg.content)) continue
+      const ts = msg.timestamp ?? 0
+      for (const block of msg.content) {
+        if (block.type === 'toolCall') {
+          const name = (block as ToolCallBlock).name
+          if (!counts[name]) counts[name] = { count: 0, lastSeen: ts }
+          counts[name].count++
+          if (ts > counts[name].lastSeen) {
+            counts[name].lastSeen = ts
+          }
+        }
+      }
     }
+    return Object.entries(counts)
+      .map(([name, { count, lastSeen }]) => ({ name, count, lastSeen }))
+      .sort((a, b) => b.lastSeen - a.lastSeen)
+      .slice(0, 4)
+  }, [openClawMessages, isStreaming])
 
-    if (isStreaming) {
-      setClippyState(ClippyState.THINKING)
-      return
-    }
+  // Latest usage stats: find last message with usage data
+  const lastMsgWithUsage = [...openClawMessages].reverse().find((m) => m.usage)
+  const latestStats = lastMsgWithUsage
+    ? {
+        tokens: lastMsgWithUsage.usage!.totalTokens,
+        model: lastMsgWithUsage.model ?? null
+      }
+    : null
 
-    // Check if last message is from assistant
-    const lastMessage = chatMessages[chatMessages.length - 1]
-    if (lastMessage?.role === 'assistant') {
-      setClippyState(ClippyState.SPEAKING)
-      const timer = setTimeout(
-        () => setClippyState(ClippyState.IDLE),
-        SPEAKING_ANIMATION_DURATION
-      )
-      return () => clearTimeout(timer)
-    }
-
-    setClippyState(ClippyState.IDLE)
-    /* eslint-enable react-hooks/set-state-in-effect */
-  }, [status, isStreaming, chatMessages])
-
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom
   useEffect(() => {
     if (chatContainerRef.current) {
-      // Use smooth scroll during streaming to reduce jitter
       chatContainerRef.current.scrollTo({
         top: chatContainerRef.current.scrollHeight,
         behavior: isStreaming ? 'smooth' : 'auto'
@@ -109,46 +119,52 @@ function App() {
     }
   }, [chatMessages, isStreaming])
 
-  // Auto-resize textarea based on content
+  // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current
     if (!textarea) return
-
     textarea.style.height = 'auto'
     textarea.style.height = `${Math.min(textarea.scrollHeight, TEXTAREA_MAX_HEIGHT)}px`
   }, [input])
 
-  // Initialize: migrate from localStorage on first load
+  // One-time migration
   useEffect(() => {
     migrateFromLocalStorage()
   }, [])
 
-  // Listen for chat window ready event and hide main window with fade animation
+  // Update tray tooltip when connection status changes
+  useEffect(() => {
+    invoke('update_tray_tooltip', { status: status.toString() }).catch(() => {})
+  }, [status])
+
+  // Listen for tray "Settings" click
+  useEffect(() => {
+    const unlisten = listen('tray-open-settings', () => {
+      openSettingsWindow(activeSession?.sessionKey)
+    })
+    return () => {
+      unlisten.then((fn) => fn())
+    }
+  }, [activeSession])
+
+  // Fade in/out when chat window opens/closes
   useEffect(() => {
     const mainWindow = getCurrentWindow()
     const appElement = document.getElementById('root')
 
     const unlistenReady = listen('chat-window-ready', async () => {
       if (appElement) {
-        // Add fade-out animation
         appElement.style.transition = 'opacity 0.2s ease-out'
         appElement.style.opacity = '0'
-
-        // Wait for animation to complete, then hide window
         await new Promise((resolve) => setTimeout(resolve, 200))
       }
       await mainWindow.hide()
     })
 
     const unlistenClose = listen('chat-window-closed', async () => {
-      // Show window first (but it's still invisible)
       await mainWindow.show()
-
       if (appElement) {
-        // Reset opacity to 0 before fade-in
         appElement.style.opacity = '0'
-
-        // Trigger fade-in animation
         requestAnimationFrame(() => {
           appElement.style.transition = 'opacity 0.2s ease-in'
           appElement.style.opacity = '1'
@@ -171,151 +187,202 @@ function App() {
   const handleSendMessage = () => {
     const trimmed = input.trim()
     if (!trimmed || !isConnected) return
-
     sendMessage(trimmed)
     setInput('')
     resetTextareaHeight()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (isTyping) {
-      return
-    }
+    if (isTyping) return
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSendMessage()
     }
   }
 
+  // Status accent color
+  const accentClass = isStreaming
+    ? 'bg-amber-400'
+    : status === ConnectionStatus.CONNECTED
+      ? 'bg-emerald-400'
+      : status === ConnectionStatus.ERROR
+        ? 'bg-red-400'
+        : 'bg-gray-400'
+
+  const accentTextClass = isStreaming
+    ? 'text-amber-400'
+    : status === ConnectionStatus.CONNECTED
+      ? 'text-emerald-400'
+      : status === ConnectionStatus.ERROR
+        ? 'text-red-400'
+        : 'text-gray-400'
+
   const hasMessages = chatMessages.length > 0
 
   return (
-    <div className="flex h-full w-full items-center gap-3 p-3">
-      {/* Chat Bubble - Left side */}
-      <div className="relative flex max-h-95 min-w-0 flex-1 flex-col rounded-3xl bg-white/95 shadow-2xl backdrop-blur-xl">
-        {/* Pointing triangle to Clippy */}
-        <div className="absolute top-1/2 -right-2 h-0 w-0 -translate-y-1/2 border-t-12 border-b-12 border-l-12 border-t-transparent border-b-transparent border-l-white/95" />
+    <div className="flex h-full w-full bg-transparent p-3">
+      {/* Widget Card */}
+      <div className="widget-card border-border/40 bg-card/95 relative flex h-full w-full flex-col overflow-hidden rounded-3xl border">
+        {/* Header */}
+        <div
+          className="border-border/40 flex shrink-0 items-center gap-2.5 border-b px-4 py-3"
+          data-tauri-drag-region
+        >
+          {/* Status dot */}
+          <div
+            className={cn(
+              'h-2 w-2 shrink-0 rounded-full',
+              accentClass,
+              isStreaming && 'animate-pulse'
+            )}
+          />
 
-        {/* Header with Connection Status and Action Buttons */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2">
-          <div className="flex items-center gap-2">
-            <div
-              className={`h-2 w-2 rounded-full ${
-                status === ConnectionStatus.CONNECTED
-                  ? 'bg-green-500'
-                  : status === ConnectionStatus.CONNECTING
-                    ? 'bg-yellow-500'
-                    : status === ConnectionStatus.ERROR
-                      ? 'bg-red-500'
-                      : 'bg-gray-400'
-              }`}
-            />
-            <span className="max-w-30 truncate text-xs text-gray-600">
-              {activeSession?.label ?? activeSession?.name ?? 'Loading...'}
-            </span>
-          </div>
+          {/* Session name */}
+          <span
+            className="text-foreground min-w-0 flex-1 truncate text-sm font-medium"
+            data-tauri-drag-region
+          >
+            {activeSession?.label ?? activeSession?.name ?? 'Loading…'}
+          </span>
 
-          <div className="flex items-center gap-1">
+          {/* Actions */}
+          <div className="flex shrink-0 items-center gap-0.5" data-tauri-ignore>
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger asChild>
                 <button
-                  onClick={() => openChatWindow(activeSession.sessionKey)}
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                  onClick={() => openChatWindow(activeSession?.sessionKey)}
+                  className="text-muted-foreground hover:bg-muted hover:text-foreground flex h-6 w-6 items-center justify-center rounded-md transition-colors"
                 >
-                  <Maximize size={14} />
+                  <Maximize2 size={12} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent side="bottom">
                 <p>詳細はこちら</p>
               </TooltipContent>
             </Tooltip>
 
             <button
-              onClick={() => openSettingsWindow(activeSession.sessionKey)}
-              className="flex h-7 w-7 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              onClick={() => openSettingsWindow(activeSession?.sessionKey)}
+              className="text-muted-foreground hover:bg-muted hover:text-foreground flex h-6 w-6 items-center justify-center rounded-md transition-colors"
               title="Settings"
             >
-              <Settings size={14} />
+              <Settings size={12} />
             </button>
           </div>
         </div>
 
-        {/* Chat content */}
-        <div className="flex min-h-0 flex-1 flex-col">
-          {/* Messages area - Draggable */}
-          <div
-            ref={chatContainerRef}
-            className="no-scrollbar scrollbar-track-transparent min-h-0 flex-1 space-y-1.5 overflow-y-auto px-4 py-3"
+        {/* Messages */}
+        <div
+          ref={chatContainerRef}
+          className="no-scrollbar min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-3"
+        >
+          {!hasMessages && !isStreaming && (
+            <div className="text-muted-foreground text-xs leading-relaxed">
+              <p className="text-foreground font-semibold">Hi, I'm Clippy.</p>
+              <p className="mt-0.5">How can I help you today?</p>
+            </div>
+          )}
+
+          {chatMessages.map((message) => (
+            <div key={message.id} className="animate-slide-in">
+              {message.role === 'user' ? (
+                <div className="flex justify-end">
+                  <div className="bg-primary text-primary-foreground max-w-[85%] rounded-2xl rounded-tr-sm px-3 py-2 text-xs leading-relaxed">
+                    {message.content}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-foreground text-xs leading-relaxed">
+                  <Markdown
+                    content={message.content}
+                    className="markdown-compact"
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+
+          {isStreaming && (
+            <div className="flex gap-1 py-1">
+              <span className="animate-typing h-1.5 w-1.5 rounded-full bg-amber-400" />
+              <span className="animate-typing h-1.5 w-1.5 rounded-full bg-amber-400 [animation-delay:0.2s]" />
+              <span className="animate-typing h-1.5 w-1.5 rounded-full bg-amber-400 [animation-delay:0.4s]" />
+            </div>
+          )}
+        </div>
+
+        {/* Tool calls — only shown while streaming */}
+        {isStreaming && toolCallStats.length > 0 && (
+          <div className="border-border/40 shrink-0 border-t px-4 py-2">
+            <p className="text-muted-foreground mb-1.5 text-[9px] font-semibold tracking-widest uppercase">
+              Tool Calls
+            </p>
+            <div className="space-y-0.5">
+              {toolCallStats.map((tc) => (
+                <div
+                  key={tc.name}
+                  className="flex items-center justify-between gap-2"
+                >
+                  <span className="text-foreground/70 truncate font-mono text-[11px]">
+                    {tc.name}
+                  </span>
+                  <span
+                    className={cn(
+                      'shrink-0 font-mono text-[10px]',
+                      accentTextClass
+                    )}
+                  >
+                    ×{tc.count} {timeAgo(tc.lastSeen)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Stats footer */}
+        {latestStats && !isStreaming && (
+          <div className="border-border/40 flex shrink-0 items-center gap-2 border-t px-4 py-1.5">
+            <span className="text-muted-foreground font-mono text-[10px]">
+              {latestStats.tokens.toLocaleString()} tokens
+            </span>
+            {latestStats.model && (
+              <>
+                <span className="text-border text-[10px]">·</span>
+                <span className="text-muted-foreground max-w-[140px] truncate font-mono text-[10px]">
+                  {latestStats.model}
+                </span>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Input */}
+        <div className="border-border/40 flex shrink-0 items-end gap-2 border-t px-4 py-3">
+          <textarea
+            onCompositionStart={() => setIsTyping(true)}
+            onCompositionEnd={() => setIsTyping(false)}
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={isConnected ? 'Ask me anything…' : 'Disconnected…'}
+            disabled={!isConnected}
+            rows={1}
+            className="no-scrollbar bg-muted text-foreground placeholder:text-muted-foreground/60 ring-border/50 max-h-20 min-h-8 flex-1 resize-none rounded-2xl px-3 py-2 text-xs transition-shadow outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-40"
+          />
+          <button
+            onClick={handleSendMessage}
+            disabled={!isConnected || !input.trim()}
+            className={cn(
+              'flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all',
+              'bg-primary text-primary-foreground hover:opacity-90 active:scale-95',
+              'disabled:cursor-not-allowed disabled:opacity-30'
+            )}
           >
-            {!hasMessages && !isStreaming && (
-              <div className="text-xs leading-relaxed text-gray-700">
-                <p className="font-medium">
-                  Hi! I'm Clippy, your AI assistant.
-                </p>
-                <p className="mt-1">Would you like to get some assistance?</p>
-              </div>
-            )}
-
-            {chatMessages.map((message) => (
-              <div key={message.id} className="animate-slide-in">
-                {message.role === 'user' ? (
-                  <div className="flex justify-end">
-                    <div className="bg-card border-border max-w-[85%] rounded-lg border px-3 py-2 text-sm leading-relaxed">
-                      <Markdown
-                        content={message.content}
-                        className="markdown-compact"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-sm leading-relaxed text-gray-800">
-                    <Markdown
-                      content={message.content}
-                      className="markdown-compact"
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {isStreaming && (
-              <div className="flex gap-1 py-1">
-                <span className="animate-typing h-1.5 w-1.5 rounded-full bg-gray-400"></span>
-                <span className="animate-typing h-1.5 w-1.5 rounded-full bg-gray-400 [animation-delay:0.2s]"></span>
-                <span className="animate-typing h-1.5 w-1.5 rounded-full bg-gray-400 [animation-delay:0.4s]"></span>
-              </div>
-            )}
-          </div>
-
-          {/* Input area */}
-          <div className="flex items-end gap-2 border-t border-gray-200 px-4 py-3">
-            <textarea
-              onCompositionStart={() => setIsTyping(true)}
-              onCompositionEnd={() => setIsTyping(false)}
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={isConnected ? 'Ask me anything' : 'Disconnected...'}
-              disabled={!isConnected}
-              rows={1}
-              className="no-scrollbar max-h-20 min-h-8 flex-1 resize-none rounded-2xl border border-gray-300 bg-gray-50 px-3 py-2 text-xs transition-colors outline-none focus:border-blue-400 disabled:cursor-not-allowed disabled:bg-gray-100"
-            />
-            <button
-              onClick={handleSendMessage}
-              disabled={!isConnected || !input.trim()}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
-              title="Send"
-            >
-              <ArrowRight size={14} className="text-gray-700" />
-            </button>
-          </div>
+            <ArrowUp size={14} />
+          </button>
         </div>
-      </div>
-
-      {/* Clippy Avatar - Right side - Draggable */}
-      <div className="shrink-0" data-tauri-drag-region>
-        <ClippyAvatar state={clippyState} size={160} />
       </div>
     </div>
   )

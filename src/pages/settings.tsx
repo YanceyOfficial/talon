@@ -12,9 +12,12 @@ import {
   SidebarProvider
 } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useTheme } from '@/hooks/use-theme'
 import { useMultiSessionOpenClaw } from '@/hooks/use-multi-session'
+import { cn } from '@/lib/utils'
 import { toAgentId } from '@/lib/session-manager'
 import { getSettings, saveSettings, type AppSettings } from '@/lib/store'
+import { type Theme } from '@/lib/theme'
 import { type GatewaySession } from '@/types/gateway'
 import { ConnectionStatus } from '@/types/openclaw'
 import { SessionType } from '@/types/session'
@@ -28,8 +31,12 @@ import {
   Layers,
   Link as LinkIcon,
   Loader2,
+  Monitor,
+  Moon,
+  Palette,
   Plus,
   Settings as SettingsIcon,
+  Sun,
   // Trash2,
   X
 } from 'lucide-react'
@@ -42,11 +49,14 @@ const initialSessionKey = new URLSearchParams(window.location.search).get(
 
 const navItems = [
   { name: 'Agents', icon: Layers },
+  { name: 'Appearance', icon: Palette },
   { name: 'Connection', icon: LinkIcon },
   { name: 'About', icon: SettingsIcon }
 ]
 
 export function SettingsPage() {
+  const { theme, setTheme } = useTheme()
+
   const [settings, setSettings] = useState<AppSettings>({
     gatewayUrl: '',
     token: ''
@@ -519,6 +529,42 @@ export function SettingsPage() {
                       <Plus className="h-4 w-4" />
                       Create Agent
                     </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeNav === 'Appearance' && (
+              <div className="max-w-3xl space-y-4">
+                <div className="space-y-3 rounded-lg border p-4">
+                  <div>
+                    <Label className="text-sm font-medium">Theme</Label>
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      Choose how Clippy looks. "System" follows your OS setting.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(
+                      [
+                        { value: 'system' as Theme, label: 'System', icon: Monitor },
+                        { value: 'light' as Theme, label: 'Light', icon: Sun },
+                        { value: 'dark' as Theme, label: 'Dark', icon: Moon }
+                      ] as const
+                    ).map(({ value, label, icon: Icon }) => (
+                      <button
+                        key={value}
+                        onClick={() => setTheme(value)}
+                        className={cn(
+                          'flex flex-col items-center gap-2 rounded-lg border-2 p-4 text-sm transition-colors',
+                          theme === value
+                            ? 'border-primary bg-primary/5 text-primary'
+                            : 'border-border text-muted-foreground hover:bg-muted/50'
+                        )}
+                      >
+                        <Icon className="h-5 w-5" />
+                        <span>{label}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
