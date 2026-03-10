@@ -32,7 +32,7 @@ jobs:
     if: ${{ needs.release-please.outputs.pr != '' }}
     runs-on: ubuntu-latest
     steps:
-      - run: gh pr merge --merge "${{ needs.release-please.outputs.pr }}" --repo "$GITHUB_REPOSITORY"
+      - run: gh pr merge --merge "${{ fromJson(needs.release-please.outputs.pr).number }}" --repo "$GITHUB_REPOSITORY"
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
