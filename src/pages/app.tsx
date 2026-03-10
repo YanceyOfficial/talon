@@ -267,17 +267,22 @@ function App() {
 
   return (
     <div className="flex h-full w-full flex-col bg-transparent px-3 pb-3">
-      {/* Caret pointing up toward tray icon */}
-      <div className="flex h-3 shrink-0 items-end justify-center">
-        <div
-          className="h-0 w-0"
-          style={{
-            borderLeft: '8px solid transparent',
-            borderRight: '8px solid transparent',
-            borderBottom: '8px solid var(--card)',
-            filter: 'drop-shadow(0 -1px 0.5px oklch(0 0 0 / 12%))'
-          }}
-        />
+      {/* Caret — overlaps card top by 1px so they read as one shape */}
+      <div className="relative z-10 -mb-[0.5px] flex h-3 shrink-0 items-end justify-center">
+        <svg width="20" height="9" viewBox="0 0 20 9" fill="none">
+          {/* border edges of the two visible sides */}
+          <path
+            d="M0 9 L10 0.5 L20 9"
+            stroke="var(--border)"
+            strokeOpacity="0.4"
+            strokeWidth="1"
+            strokeLinejoin="round"
+          />
+          {/* fill — match card's bg-card/95 opacity */}
+          <path d="M0 9 L10 0.5 L20 9 Z" fill="var(--card)" fillOpacity="0.95" />
+          {/* cover the base seam so card border doesn't show through */}
+          <line x1="-1" y1="9.5" x2="21" y2="9.5" stroke="var(--card)" strokeWidth="2" strokeOpacity="0.95" />
+        </svg>
       </div>
       {/* Widget Card */}
       <div className="widget-card border-border/40 bg-card/95 relative flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-3xl border">
@@ -422,7 +427,7 @@ function App() {
             placeholder={isConnected ? 'Ask me anything…' : 'Disconnected…'}
             disabled={!isConnected}
             rows={1}
-            className="no-scrollbar bg-muted text-foreground placeholder:text-muted-foreground/60 ring-border/50 max-h-20 min-h-8 flex-1 resize-none rounded-2xl px-3 py-2 text-xs transition-shadow outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-40"
+            className="no-scrollbar bg-background/60 text-foreground placeholder:text-muted-foreground/50 ring-border/60 max-h-20 min-h-8 flex-1 resize-none rounded-2xl border border-border/50 px-3 py-2 text-xs transition-shadow outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-40"
           />
           <button
             onClick={handleSendMessage}
