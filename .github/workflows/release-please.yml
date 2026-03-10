@@ -22,7 +22,7 @@ jobs:
         with:
           # Must use PAT (not GITHUB_TOKEN) so that the auto-merge below
           # triggers a new push event and publish-tauri can run.
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
 
   # Automatically merge the release PR so the whole pipeline is hands-free.
@@ -33,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: gh pr merge --merge "${{ needs.release-please.outputs.pr }}" --repo "$GITHUB_REPOSITORY"
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
