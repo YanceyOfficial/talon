@@ -21,11 +21,7 @@ jobs:
       - id: release
         uses: googleapis/release-please-action@v4
         with:
-          release-type: node
-          package-name: release-please-action
-          extra-files: |
-            src-tauri/Cargo.toml
-            src-tauri/tauri.conf.json
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   # ── Step 2: Build and upload binaries to the release ─────────────────────
   # Only runs when release-please actually created a new release.
