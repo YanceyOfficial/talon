@@ -2,9 +2,8 @@ name: 'publish'
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
 
 jobs:
   publish-tauri:
@@ -53,7 +52,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          # release-please already created the release; just upload artifacts to it
-          tagName: ${{ github.ref_name }}
+          # upload artifacts to the release release-please already created
+          tagName: ${{ github.event.release.tag_name }}
+          releaseId: ${{ github.event.release.id }}
           releaseDraft: false
           prerelease: false
