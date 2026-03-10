@@ -4,6 +4,15 @@ All notable changes to Talon will be documented in this file.
 
 ---
 
+## [1.4.3](https://github.com/YanceyOfficial/talon/compare/v1.4.2...v1.4.3) (2026-03-10)
+
+
+### Bug Fixes
+
+* fine-tune caret overlap to 0.5px ([db805a1](https://github.com/YanceyOfficial/talon/commit/db805a1f93ce41a118bc4b734d3d1bd4be3c3cde))
+* make caret visually merge with widget card ([d941627](https://github.com/YanceyOfficial/talon/commit/d94162769d424850c0f927e44ec4320ea829e954))
+* match caret opacity to card and lighten textarea background ([ef52882](https://github.com/YanceyOfficial/talon/commit/ef5288216fa0fd760cb66e1402c8267223c2a74c))
+
 ## [1.4.2](https://github.com/YanceyOfficial/talon/compare/v1.4.1...v1.4.2) (2026-03-10)
 
 
