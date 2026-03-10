@@ -15,14 +15,28 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       release_id: ${{ steps.release.outputs.id }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
+      pr: ${{ steps.release.outputs.pr }}
     steps:
       - id: release
         uses: googleapis/release-please-action@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # Must use PAT (not GITHUB_TOKEN) so that the auto-merge below
+          # triggers a new push event and publish-tauri can run.
+          token: ${{ secrets.GH_TOKEN }}
           config-file: release-please-config.json
 
+  # Automatically merge the release PR so the whole pipeline is hands-free.
+  # Uses the same PAT so the resulting push fires a new workflow run.
+  auto-merge-release-pr:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.pr != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh pr merge --merge "${{ needs.release-please.outputs.pr }}" --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  # Runs only when release-please actually created a new GitHub release.
   publish-tauri:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
