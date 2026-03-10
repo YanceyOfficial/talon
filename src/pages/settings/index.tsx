@@ -36,9 +36,9 @@ const initialSessionKey = new URLSearchParams(window.location.search).get(
 )
 
 const navItems = [
-  { name: 'Agents', icon: Layers },
   { name: 'General', icon: SlidersHorizontal },
   { name: 'Connection', icon: LinkIcon },
+  { name: 'Agents', icon: Layers },
   { name: 'Logs', icon: ScrollText },
   { name: 'About', icon: SettingsIcon }
 ]
@@ -197,10 +197,7 @@ export function SettingsPage() {
               />
             )}
             {activeNav === 'General' && (
-              <GeneralTab
-                settings={settings}
-                setSettings={setSettingsState}
-              />
+              <GeneralTab settings={settings} setSettings={setSettingsState} />
             )}
             {activeNav === 'Connection' && (
               <ConnectionTab
