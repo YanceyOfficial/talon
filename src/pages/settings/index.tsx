@@ -16,22 +16,20 @@ import { type GatewaySession } from '@/types/gateway'
 import { ConnectionStatus } from '@/types/openclaw'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import {
-  Keyboard,
   Layers,
   Link as LinkIcon,
   Loader2,
-  Palette,
   ScrollText,
   Settings as SettingsIcon,
+  SlidersHorizontal,
   X
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AboutTab } from './about-tab'
 import { AgentsTab } from './agents-tab'
-import { AppearanceTab } from './appearance-tab'
 import { ConnectionTab } from './connection-tab'
+import { GeneralTab } from './general-tab'
 import { LogsTab } from './logs-tab'
-import { ShortcutsTab } from './shortcuts-tab'
 
 const initialSessionKey = new URLSearchParams(window.location.search).get(
   'sessionKey'
@@ -39,8 +37,7 @@ const initialSessionKey = new URLSearchParams(window.location.search).get(
 
 const navItems = [
   { name: 'Agents', icon: Layers },
-  { name: 'Appearance', icon: Palette },
-  { name: 'Shortcuts', icon: Keyboard },
+  { name: 'General', icon: SlidersHorizontal },
   { name: 'Connection', icon: LinkIcon },
   { name: 'Logs', icon: ScrollText },
   { name: 'About', icon: SettingsIcon }
@@ -199,9 +196,8 @@ export function SettingsPage() {
                 createSession={createSession}
               />
             )}
-            {activeNav === 'Appearance' && <AppearanceTab />}
-            {activeNav === 'Shortcuts' && (
-              <ShortcutsTab
+            {activeNav === 'General' && (
+              <GeneralTab
                 settings={settings}
                 setSettings={setSettingsState}
               />

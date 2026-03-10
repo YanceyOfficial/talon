@@ -1,10 +1,13 @@
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { useTheme } from '@/hooks/use-theme'
 import { saveSettings, type AppSettings } from '@/lib/store'
 import { cn } from '@/lib/utils'
 import { invoke } from '@tauri-apps/api/core'
-import { Check, X } from 'lucide-react'
+import { Check, Monitor, Moon, Sun, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+
+// ── Shortcut recorder ────────────────────────────────────────────────────────
 
 function eventToShortcut(e: KeyboardEvent): string | null {
   const modifiers: string[] = []
@@ -67,16 +70,53 @@ function ShortcutRecorder({
   )
 }
 
-interface ShortcutsTabProps {
+// ── GeneralTab ───────────────────────────────────────────────────────────────
+
+interface GeneralTabProps {
   settings: AppSettings
   setSettings: (s: AppSettings) => void
 }
 
-export function ShortcutsTab({ settings, setSettings }: ShortcutsTabProps) {
+export function GeneralTab({ settings, setSettings }: GeneralTabProps) {
+  const { theme, setTheme } = useTheme()
   const [saved, setSaved] = useState(false)
 
   return (
     <div className="max-w-3xl space-y-4">
+      {/* Theme */}
+      <div className="space-y-3 rounded-lg border p-4">
+        <div>
+          <Label className="text-sm font-medium">Theme</Label>
+          <p className="text-muted-foreground mt-1 text-xs">
+            Choose how Talon looks. "System" follows your OS setting.
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {(
+            [
+              { value: 'system', label: 'System', icon: Monitor },
+              { value: 'light', label: 'Light', icon: Sun },
+              { value: 'dark', label: 'Dark', icon: Moon }
+            ] as const
+          ).map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              onClick={() => setTheme(value)}
+              className={cn(
+                'flex flex-col items-center gap-2 rounded-lg border-2 p-4 text-sm transition-colors',
+                theme === value
+                  ? 'border-primary bg-primary/5 text-primary'
+                  : 'border-border text-muted-foreground hover:bg-muted/50'
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Shortcut */}
       <div className="space-y-4 rounded-lg border p-4">
         <div>
           <Label className="text-sm font-medium">Toggle Panel Shortcut</Label>
