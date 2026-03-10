@@ -20,7 +20,10 @@ interface AgentsTabProps {
   switchSession: (id: string) => Promise<void>
   switchToSessionKey: (key: string, label?: string) => Promise<void>
   createSession: (
-    config: Omit<SessionConfig, 'id' | 'createdAt' | 'lastActiveAt' | 'active' | 'sessionKey'>
+    config: Omit<
+      SessionConfig,
+      'id' | 'createdAt' | 'lastActiveAt' | 'active' | 'sessionKey'
+    >
   ) => Promise<SessionConfig>
 }
 

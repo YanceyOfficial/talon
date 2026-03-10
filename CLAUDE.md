@@ -176,6 +176,7 @@ The orange loading dots have two phases:
 2. **Tokens flowing** (`isStreaming=true`, assistant message with `isFinal=false` exists): hide dots
 
 Implemented via `isWaitingForFirstToken` in `app.tsx`:
+
 ```ts
 const isWaitingForFirstToken =
   isStreaming &&

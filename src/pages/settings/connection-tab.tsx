@@ -32,7 +32,11 @@ export function ConnectionTab({ settings, setSettings }: ConnectionTabProps) {
   }
 
   const handleReset = async () => {
-    const defaults = { ...settings, gatewayUrl: 'ws://localhost:18789', token: '' }
+    const defaults = {
+      ...settings,
+      gatewayUrl: 'ws://localhost:18789',
+      token: ''
+    }
     setSettings(defaults)
     await saveSettings(defaults)
     await emit('gateway-settings-changed', {})
@@ -49,7 +53,9 @@ export function ConnectionTab({ settings, setSettings }: ConnectionTabProps) {
             First-time setup
           </p>
           <ol className="list-inside list-decimal space-y-0.5 text-xs text-green-700 dark:text-green-300">
-            <li>Enter your Gateway URL and Token below and click Save Changes</li>
+            <li>
+              Enter your Gateway URL and Token below and click Save Changes
+            </li>
             <li>
               On the machine where OpenClaw is deployed, run:{' '}
               <code className="rounded bg-green-100 px-1 dark:bg-green-900">

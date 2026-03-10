@@ -1,5 +1,5 @@
-import { check, type Update } from '@tauri-apps/plugin-updater'
 import { relaunch } from '@tauri-apps/plugin-process'
+import { check, type Update } from '@tauri-apps/plugin-updater'
 import { useCallback, useRef, useState } from 'react'
 
 export type UpdateState =
@@ -53,7 +53,9 @@ export function useUpdater() {
           total = event.data.contentLength ?? 0
         } else if (event.event === 'Progress') {
           downloaded += event.data.chunkLength
-          setDownloadProgress(total > 0 ? Math.round((downloaded / total) * 100) : 0)
+          setDownloadProgress(
+            total > 0 ? Math.round((downloaded / total) * 100) : 0
+          )
         } else if (event.event === 'Finished') {
           setDownloadProgress(100)
         }

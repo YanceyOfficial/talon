@@ -60,6 +60,7 @@ talon/
 The app uses three separate Tauri windows with shared state via Tauri events:
 
 ### 1. Main Window (`main.tsx` → `app.tsx`)
+
 - Floating, transparent, always-on-top assistant (450×420px)
 - Positioned at bottom-right corner dynamically
 - Compact UI with `markdown-compact` styling
@@ -67,11 +68,13 @@ The app uses three separate Tauri windows with shared state via Tauri events:
 - Hides on blur, shown via tray icon click
 
 ### 2. Settings Window (`settings-main.tsx` → `settings.tsx`)
+
 - Standard window with sidebar navigation
 - Manages gateway connection, sessions, and API keys
 - Session CRUD operations (create/delete/switch)
 
 ### 3. Chat Window (`chat-main.tsx` → `chat.tsx`)
+
 - Full-screen chat history viewer
 - Rich markdown with syntax highlighting and math (KaTeX)
 - Usage statistics (tokens, cost, model info)
@@ -90,10 +93,10 @@ useMultiSessionOpenClaw  ← pages use this
         └─ src/lib/device-identity.ts  (Ed25519 auth)
 ```
 
-| Hook | Responsibility |
-|------|---------------|
-| `useOpenClaw` | WebSocket connection, frame handling, device authentication |
-| `useSessionManager` | Session CRUD, active session tracking, Tauri Store persistence |
+| Hook                      | Responsibility                                                            |
+| ------------------------- | ------------------------------------------------------------------------- |
+| `useOpenClaw`             | WebSocket connection, frame handling, device authentication               |
+| `useSessionManager`       | Session CRUD, active session tracking, Tauri Store persistence            |
 | `useMultiSessionOpenClaw` | Combines both; message history per session, auto-switching, notifications |
 
 ## OpenClaw Gateway Integration
@@ -122,10 +125,12 @@ useMultiSessionOpenClaw  ← pages use this
 ## Session Management
 
 **Session types**:
+
 - `main` — Default daily chat (cannot be deleted), key: `agent:main:main`
 - `task` — User-created sessions, key: `agent:main:{UUID}`
 
 **Auto-switch polling** (every 10s):
+
 - Fetch last message from each non-active session via `chat.history` (limit=1)
 - If newer assistant message found → send desktop notification + switch session
 - Only switches to one session per poll cycle
@@ -134,13 +139,13 @@ useMultiSessionOpenClaw  ← pages use this
 
 All state stored via `@tauri-apps/plugin-store`:
 
-| Key | Content |
-|-----|---------|
-| `openclaw_sessions` | Session configs array |
-| `openclaw_active_session` | Active session ID |
-| `session_messages_{sessionId}` | Message history per session |
-| `device_identity` | Ed25519 keypair + device UUID |
-| `settings` | Gateway URL + token |
+| Key                            | Content                       |
+| ------------------------------ | ----------------------------- |
+| `openclaw_sessions`            | Session configs array         |
+| `openclaw_active_session`      | Active session ID             |
+| `session_messages_{sessionId}` | Message history per session   |
+| `device_identity`              | Ed25519 keypair + device UUID |
+| `settings`                     | Gateway URL + token           |
 
 ## UI Components
 
