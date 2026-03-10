@@ -4,6 +4,13 @@ All notable changes to Talon will be documented in this file.
 
 ---
 
+## [1.4.1](https://github.com/YanceyOfficial/talon/compare/v1.4.0...v1.4.1) (2026-03-10)
+
+
+### Bug Fixes
+
+* friendly error when no release published yet, clean up publish workflow ([7589d18](https://github.com/YanceyOfficial/talon/commit/7589d18e17de02aa76b85353bc7adaee3ab03e07))
+
 ## [1.4.0](https://github.com/YanceyOfficial/talon/compare/v1.3.0...v1.4.0) (2026-03-10)
 
 
