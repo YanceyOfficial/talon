@@ -4,6 +4,13 @@ All notable changes to Talon will be documented in this file.
 
 ---
 
+## [1.4.2](https://github.com/YanceyOfficial/talon/compare/v1.4.1...v1.4.2) (2026-03-10)
+
+
+### Bug Fixes
+
+* enable native window shadow for settings and chat windows ([2caddec](https://github.com/YanceyOfficial/talon/commit/2caddec7762fa03749cc805a22fe570e6939712e))
+
 ## [1.4.1](https://github.com/YanceyOfficial/talon/compare/v1.4.0...v1.4.1) (2026-03-10)
 
 
