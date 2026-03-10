@@ -9,6 +9,7 @@ import { MessageBubble } from '@/components/message-bubble'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useOpenClaw } from '@/hooks/use-open-claw'
+import { useTheme } from '@/hooks/use-theme'
 import { convertHistoryMessages } from '@/lib/message-utils'
 import type { ChatHistoryResponse, SessionUsage } from '@/types/gateway'
 import { ConnectionStatus, OpenClawMessage } from '@/types/openclaw'
@@ -23,6 +24,7 @@ const sessionKey =
   'agent:main:main'
 
 export function ChatPage() {
+  useTheme()
   const {
     status,
     messages: streamMessages,

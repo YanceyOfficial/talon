@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
@@ -8,8 +9,8 @@ import {
   SidebarMenuItem,
   SidebarProvider
 } from '@/components/ui/sidebar'
-import { Button } from '@/components/ui/button'
 import { useMultiSessionOpenClaw } from '@/hooks/use-multi-session'
+import { useTheme } from '@/hooks/use-theme'
 import { getSettings, type AppSettings } from '@/lib/store'
 import { type GatewaySession } from '@/types/gateway'
 import { ConnectionStatus } from '@/types/openclaw'
@@ -20,6 +21,7 @@ import {
   Link as LinkIcon,
   Loader2,
   Palette,
+  ScrollText,
   Settings as SettingsIcon,
   X
 } from 'lucide-react'
@@ -28,6 +30,7 @@ import { AboutTab } from './about-tab'
 import { AgentsTab } from './agents-tab'
 import { AppearanceTab } from './appearance-tab'
 import { ConnectionTab } from './connection-tab'
+import { LogsTab } from './logs-tab'
 import { ShortcutsTab } from './shortcuts-tab'
 
 const initialSessionKey = new URLSearchParams(window.location.search).get(
@@ -39,10 +42,12 @@ const navItems = [
   { name: 'Appearance', icon: Palette },
   { name: 'Shortcuts', icon: Keyboard },
   { name: 'Connection', icon: LinkIcon },
+  { name: 'Logs', icon: ScrollText },
   { name: 'About', icon: SettingsIcon }
 ]
 
 export function SettingsPage() {
+  useTheme()
   const [settings, setSettingsState] = useState<AppSettings>({
     gatewayUrl: '',
     token: '',
@@ -67,7 +72,9 @@ export function SettingsPage() {
     serverVersion
   } = useMultiSessionOpenClaw()
 
-  const [allGatewaySessions, setAllGatewaySessions] = useState<GatewaySession[]>([])
+  const [allGatewaySessions, setAllGatewaySessions] = useState<
+    GatewaySession[]
+  >([])
   const [sessionsListLoading, setSessionsListLoading] = useState(false)
 
   const sessionsByAgent = useMemo(() => {
@@ -112,8 +119,9 @@ export function SettingsPage() {
     setSessionsListLoading(true)
     listGatewaySessions()
       .then((res) => {
-        const s = (res as { payload?: { sessions?: GatewaySession[] } })
-          ?.payload?.sessions ?? []
+        const s =
+          (res as { payload?: { sessions?: GatewaySession[] } })?.payload
+            ?.sessions ?? []
         setAllGatewaySessions(s)
       })
       .catch((e) => console.error('[Settings] Failed to fetch sessions:', e))
@@ -159,9 +167,13 @@ export function SettingsPage() {
         </Sidebar>
 
         <main className="flex h-125 flex-1 flex-col overflow-hidden">
-          <header className="flex h-16 shrink-0 items-center justify-between px-4">
+          <header
+            className="flex h-16 shrink-0 items-center justify-between px-4"
+            data-tauri-drag-region
+          >
             <h2 className="text-lg font-semibold">{activeNav}</h2>
             <Button
+              data-tauri-ignore
               variant="ghost"
               size="icon"
               onClick={handleClose}
@@ -189,11 +201,18 @@ export function SettingsPage() {
             )}
             {activeNav === 'Appearance' && <AppearanceTab />}
             {activeNav === 'Shortcuts' && (
-              <ShortcutsTab settings={settings} setSettings={setSettingsState} />
+              <ShortcutsTab
+                settings={settings}
+                setSettings={setSettingsState}
+              />
             )}
             {activeNav === 'Connection' && (
-              <ConnectionTab settings={settings} setSettings={setSettingsState} />
+              <ConnectionTab
+                settings={settings}
+                setSettings={setSettingsState}
+              />
             )}
+            {activeNav === 'Logs' && <LogsTab />}
             {activeNav === 'About' && (
               <AboutTab
                 serverVersion={serverVersion}

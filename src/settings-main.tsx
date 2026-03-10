@@ -1,8 +1,11 @@
 import '@/assets/base.css'
+import { initLogger } from '@/lib/logger'
 import { applyTheme, getSystemPrefersDark } from '@/lib/theme'
 import { SettingsPage } from '@/pages/settings'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+
+initLogger()
 
 // Apply system preference immediately to avoid theme flash
 applyTheme(getSystemPrefersDark() ? 'dark' : 'light')
