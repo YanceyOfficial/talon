@@ -4,6 +4,33 @@ All notable changes to Talon will be documented in this file.
 
 ---
 
+## [1.4.0](https://github.com/YanceyOfficial/talon/compare/v1.3.0...v1.4.0) (2026-03-10)
+
+
+### Features
+
+* add auto-update via GitHub releases + refactor settings into tabs ([8aa65dc](https://github.com/YanceyOfficial/talon/commit/8aa65dc7fa16c2ad599742db6a1d9dba4413036d))
+* add gateway session label support for better display names ([88afd0a](https://github.com/YanceyOfficial/talon/commit/88afd0a54df6679817d23adab55876d1b8d33177))
+* add logs tab in settings + fix theme sync across all windows ([b0f116a](https://github.com/YanceyOfficial/talon/commit/b0f116ad0f61e7ca678f3e6b66674062bd5e9660))
+* add system tray, dark widget redesign, and light/dark theme support ([65da540](https://github.com/YanceyOfficial/talon/commit/65da54051e22e3b04a2419263b536a38acccaa50))
+* bind main panel to tray icon (menubar popover behavior) ([58efc2e](https://github.com/YanceyOfficial/talon/commit/58efc2ecd171aae56a56e2e05e0d9abbdad83365))
+* float panel above fullscreen apps via NSStatusWindowLevel ([49f8b7a](https://github.com/YanceyOfficial/talon/commit/49f8b7a83677aa7dc6e83e8addbcf4ef2ca1001a))
+* hide when blur ([9821603](https://github.com/YanceyOfficial/talon/commit/982160348d9d0cb2446321c253bd573cfde49092))
+* hide when blur ([af57923](https://github.com/YanceyOfficial/talon/commit/af5792305f90b81b5a3366b6884592d3ea89d888))
+* hide when blur ([7c96436](https://github.com/YanceyOfficial/talon/commit/7c96436479a3561c03c7d5a123807b88d9b812c6))
+* hide when blur ([22c9a60](https://github.com/YanceyOfficial/talon/commit/22c9a600642092dd7c51476c1e8afc02ca326cf9))
+* remove system tray and fix Lottie WASM in production build ([bb31968](https://github.com/YanceyOfficial/talon/commit/bb3196834641535bdf06eb9204b19057cc17a995))
+* route WebSocket events by sessionKey and auto-switch on background session completion ([dde63f0](https://github.com/YanceyOfficial/talon/commit/dde63f028827f1a2a79776b328467d7235f67fad))
+* show dev-tools in production env ([abf8746](https://github.com/YanceyOfficial/talon/commit/abf87460f753ff8ac85dd0ed95491f1a3275d6dc))
+* update styles ([451bedf](https://github.com/YanceyOfficial/talon/commit/451bedf157f31ef5c48bc43bae3dc3bd380f29b1))
+
+
+### Bug Fixes
+
+* auto-switch to any background session key, including cron sub-sessions ([9146efb](https://github.com/YanceyOfficial/talon/commit/9146efb5d9bf7402dd76caff0a80d7f46e113f30))
+* distinguish log/debug badges and improve scroll-to-bottom button ([9e4ba9d](https://github.com/YanceyOfficial/talon/commit/9e4ba9d203401683dafdbe0f0c48a19a6132b506))
+* update types ([d17addd](https://github.com/YanceyOfficial/talon/commit/d17addd3e139b11af718232f529332d36038cc0f))
+
 ## [1.3.0](https://github.com/YanceyOfficial/talon/compare/talon-v1.2.0...talon-v1.3.0) (2026-03-10)
 
 ### Features
