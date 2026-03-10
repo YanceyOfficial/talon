@@ -51,7 +51,7 @@ export async function openSettingsWindow(sessionKey?: string) {
       titleBarStyle: 'transparent',
       decorations: false,
       hiddenTitle: true,
-      shadow: false,
+      shadow: true,
       transparent: true
     })
 
@@ -119,7 +119,7 @@ export async function openChatWindow(sessionKey: string) {
       titleBarStyle: 'transparent',
       decorations: false,
       hiddenTitle: true,
-      shadow: false,
+      shadow: true,
       transparent: true
     })
 
