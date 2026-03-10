@@ -268,7 +268,7 @@ function App() {
   return (
     <div className="flex h-full w-full flex-col bg-transparent px-3 pb-3">
       {/* Caret — overlaps card top by 1px so they read as one shape */}
-      <div className="relative z-10 -mb-px flex h-3 shrink-0 items-end justify-center">
+      <div className="relative z-10 -mb-[0.5px] flex h-3 shrink-0 items-end justify-center">
         <svg width="20" height="9" viewBox="0 0 20 9" fill="none">
           {/* border edges of the two visible sides */}
           <path
