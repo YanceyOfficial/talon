@@ -33,7 +33,12 @@ export function useUpdater() {
         return false
       }
     } catch (e) {
-      setErrorMsg(String(e))
+      const msg = String(e)
+      setErrorMsg(
+        msg.includes('release JSON') || msg.includes('404') || msg.includes('fetch')
+          ? 'No releases published yet.'
+          : msg
+      )
       setState('error')
       return false
     }

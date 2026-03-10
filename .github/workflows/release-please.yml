@@ -1,3 +1,5 @@
+name: release-please
+
 on:
   push:
     branches:
@@ -7,17 +9,11 @@ permissions:
   contents: write
   pull-requests: write
 
-name: release-please
-
 jobs:
   release-please:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-          release-type: node
-          extra-files: |
-            src-tauri/Cargo.toml
-            src-tauri/tauri.conf.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
