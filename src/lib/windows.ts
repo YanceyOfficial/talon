@@ -2,6 +2,7 @@
  * Window management utilities
  */
 
+import { invoke } from '@tauri-apps/api/core'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 
 let settingsWindowInstance: WebviewWindow | null = null
@@ -54,10 +55,13 @@ export async function openSettingsWindow(sessionKey?: string) {
       transparent: true
     })
 
-    console.log('[Windows] Settings window created')
-
     settingsWindowSessionKey = sessionKey ?? null
     console.log('[Windows] Settings window created')
+    settingsWindowInstance.once('tauri://created', () => {
+      invoke('apply_window_vibrancy', { label: 'settings' }).catch((e) =>
+        console.warn('[Windows] Vibrancy not applied to settings:', e)
+      )
+    })
 
     // Clean up reference when window is destroyed
     settingsWindowInstance.once('tauri://destroyed', () => {
@@ -121,6 +125,11 @@ export async function openChatWindow(sessionKey: string) {
 
     chatWindowSessionKey = sessionKey
     console.log('[Windows] Chat window created')
+    chatWindowInstance.once('tauri://created', () => {
+      invoke('apply_window_vibrancy', { label: 'chat' }).catch((e) =>
+        console.warn('[Windows] Vibrancy not applied to chat:', e)
+      )
+    })
 
     // Clean up reference when window is destroyed
     chatWindowInstance.once('tauri://destroyed', async () => {

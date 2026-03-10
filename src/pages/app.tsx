@@ -282,10 +282,7 @@ function App() {
       {/* Widget Card */}
       <div className="widget-card border-border/40 bg-card/95 relative flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-3xl border">
         {/* Header */}
-        <div
-          className="border-border/40 flex shrink-0 items-center gap-2.5 border-b px-4 py-3"
-          data-tauri-drag-region
-        >
+        <div className="border-border/40 flex shrink-0 items-center gap-2.5 border-b px-4 py-3">
           {/* Status dot */}
           <div
             className={cn(
@@ -296,15 +293,12 @@ function App() {
           />
 
           {/* Session name */}
-          <span
-            className="text-foreground min-w-0 flex-1 truncate text-sm font-medium"
-            data-tauri-drag-region
-          >
+          <span className="text-foreground min-w-0 flex-1 truncate text-sm font-medium">
             {activeSession?.label ?? activeSession?.name ?? 'Loading…'}
           </span>
 
           {/* Actions */}
-          <div className="flex shrink-0 items-center gap-0.5" data-tauri-ignore>
+          <div className="flex shrink-0 items-center gap-0.5">
             <Tooltip>
               <TooltipTrigger asChild>
                 <button

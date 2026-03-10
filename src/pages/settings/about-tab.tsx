@@ -3,13 +3,7 @@ import { useUpdater } from '@/hooks/use-updater'
 import { saveSettings, type AppSettings } from '@/lib/store'
 import { cn } from '@/lib/utils'
 import { ConnectionStatus } from '@/types/openclaw'
-import {
-  Check,
-  Download,
-  Loader2,
-  RefreshCw,
-  RotateCcw
-} from 'lucide-react'
+import { Check, Download, Loader2, RefreshCw, RotateCcw } from 'lucide-react'
 import { version } from '../../../package.json'
 
 interface AboutTabProps {
