@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useMultiSessionOpenClaw } from '@/hooks/use-multi-session'
 import { useTheme } from '@/hooks/use-theme'
+import { useUpdater } from '@/hooks/use-updater'
 import { getSettings, migrateFromLocalStorage } from '@/lib/store'
 import { cn } from '@/lib/utils'
 import { openChatWindow, openSettingsWindow } from '@/lib/windows'
@@ -130,6 +131,20 @@ function App() {
   // One-time migration
   useEffect(() => {
     migrateFromLocalStorage()
+  }, [])
+
+  // Silent auto-update check on startup
+  const { checkForUpdate, downloadAndInstall } = useUpdater()
+  useEffect(() => {
+    getSettings().then(async (s) => {
+      if (s.autoUpdate ?? true) {
+        const hasUpdate = await checkForUpdate().catch(() => false)
+        if (hasUpdate) {
+          await downloadAndInstall().catch(() => {})
+        }
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Register saved global shortcut on startup

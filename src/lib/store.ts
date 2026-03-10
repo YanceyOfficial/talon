@@ -20,13 +20,15 @@ export interface AppSettings {
   gatewayUrl: string
   token: string
   hotkey?: string
+  autoUpdate?: boolean
 }
 
 // Default settings
 export const DEFAULT_SETTINGS: AppSettings = {
   gatewayUrl: 'ws://localhost:18789',
   token: '',
-  hotkey: ''
+  hotkey: '',
+  autoUpdate: true
 }
 
 let storeInstance: Store | null = null
