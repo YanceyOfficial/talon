@@ -7,7 +7,7 @@ import {
   type LogLevel
 } from '@/lib/logger'
 import { cn } from '@/lib/utils'
-import { Copy, Trash2 } from 'lucide-react'
+import { ArrowDown, Copy, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 const LEVELS: LogLevel[] = ['error', 'warn', 'log', 'info', 'debug']
@@ -23,7 +23,7 @@ const levelStyle: Record<LogLevel, string> = {
 const levelBadge: Record<LogLevel, string> = {
   error: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
   warn: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
-  log: 'bg-muted text-muted-foreground',
+  log: 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200',
   info: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
   debug: 'bg-muted text-muted-foreground'
 }
@@ -157,7 +157,7 @@ export function LogsTab() {
         ref={scrollRef}
         onScroll={handleScroll}
         className="bg-muted/40 flex-1 overflow-y-auto rounded-lg border p-2 font-mono text-xs"
-        style={{ minHeight: 0, maxHeight: 'calc(100vh - 220px)' }}
+        style={{ minHeight: 0, maxHeight: 'calc(100vh - 120px)' }}
       >
         {visible.length === 0 ? (
           <p className="text-muted-foreground p-4 text-center">No logs yet</p>
@@ -196,15 +196,18 @@ export function LogsTab() {
       </div>
 
       {!autoScroll && (
-        <button
-          onClick={() => {
-            setAutoScroll(true)
-            bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-          }}
-          className="text-primary text-center text-xs underline"
-        >
-          Scroll to bottom
-        </button>
+        <div className="flex justify-center">
+          <button
+            onClick={() => {
+              setAutoScroll(true)
+              bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+            }}
+            className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium shadow-md transition-opacity hover:opacity-90"
+          >
+            <ArrowDown className="h-3 w-3" />
+            Scroll to bottom
+          </button>
+        </div>
       )}
     </div>
   )
