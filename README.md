@@ -10,23 +10,10 @@ A floating, always-on-top AI assistant for macOS, powered by the [OpenClaw](http
 
 ## Screenshots
 
-### Main Panel
-
-The compact floating window sits at the bottom-right corner of your screen. Click the avatar or the expand icon to open the full chat view.
-
-![Main App Panel](screenshots/main-app-panel.jpg)
-
-### Full Chat View
-
-Rich markdown, syntax highlighting, tool call traces, and token/cost statistics.
-
-![Chat Detail](screenshots/chat-detail.jpg)
-
-### Multiple Agents (Sessions)
-
-Manage and switch between named agent sessions. Talon auto-switches to a session when a new message arrives.
-
-![Agents Panel](screenshots/trackable-agents.jpg)
+| Main Panel | Full Chat View | Multiple Agents |
+|:---:|:---:|:---:|
+| ![Main App Panel](screenshots/main-app-panel.jpg) | ![Chat Detail](screenshots/chat-detail.jpg) | ![Agents Panel](screenshots/trackable-agents.jpg) |
+| Compact floating window at bottom-right | Rich markdown, tool traces & token stats | Manage and switch between agent sessions |
 
 ---
 
