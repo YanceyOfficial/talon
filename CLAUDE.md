@@ -50,7 +50,7 @@ The app uses three separate Tauri windows with shared state via Tauri events:
    - Usage statistics (tokens, cost, model info)
    - Handles multiple message types: user, assistant, toolCall, toolResult
 
-**Inter-window communication**: Uses Tauri events (`session-changed`, `session-messages-updated`, `chat-window-ready`, `chat-window-closed`) for state synchronization.
+**Inter-window communication**: Uses Tauri events (`session-changed`, `session-messages-updated`, `chat-window-ready`, `chat-window-closed`, `gateway-settings-changed`) for state synchronization.
 
 ### Hook Architecture (Three-Layer Design)
 
@@ -159,6 +159,10 @@ Based on shadcn/ui (Radix UI + Tailwind CSS v4). Key customizations:
 - `src/lib/store.ts` - Tauri Store wrapper with migration
 - `src/types/openclaw.ts` - OpenClaw Gateway types
 - `src/types/session.ts` - Session configuration types
+- `src/pages/app.tsx` - Main floating window
+- `src/pages/chat.tsx` - Full chat history window
+- `src/pages/settings/connection-tab.tsx` - Gateway URL + token config, first-time setup guide
+- `src/pages/settings/sessions-tab.tsx` - Session CRUD UI
 
 ### Backend (Rust)
 
