@@ -37,7 +37,7 @@ The app uses three separate Tauri windows with shared state via Tauri events:
    - Floating, transparent, always-on-top assistant (450x420px)
    - Positioned at bottom-right corner dynamically
    - Compact UI with markdown-compact styling
-   - Shows avatar (Lottie animation) + chat bubble
+   - Shows avatar + chat bubble
 
 2. **Settings Window** (`settings-main.tsx` → `settings.tsx`)
    - Standard window with sidebar navigation
@@ -141,7 +141,6 @@ Features: GFM, math (KaTeX), syntax highlighting (atomOneDark/Light), frontmatte
 
 Based on shadcn/ui (Radix UI + Tailwind CSS v4). Key customizations:
 
-- `TalonAvatar`: Lottie animation with state-based variants (idle, thinking, speaking, error)
 - `MessageBubble`: Handles different message types (user, assistant, toolCall, toolResult) with structured content blocks
 - Compact styling for main window: smaller fonts, reduced spacing, `max-h-[380px]` bubble constraint
 
