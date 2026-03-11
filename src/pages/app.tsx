@@ -407,7 +407,7 @@ function App() {
             {latestStats.model && (
               <>
                 <span className="text-border text-[10px]">·</span>
-                <span className="text-muted-foreground max-w-[140px] truncate font-mono text-[10px]">
+                <span className="text-muted-foreground max-w-35 truncate font-mono text-[10px]">
                   {latestStats.model}
                 </span>
               </>
