@@ -139,7 +139,6 @@ Open Talon's **Settings** (click the gear icon in the main panel or right-click 
 | Frontend | React 19 + TypeScript + Vite |
 | Desktop shell | Tauri 2.0 (Rust) |
 | Styling | Tailwind CSS 4.x + shadcn/ui (Radix UI) |
-| Animation | DotLottie |
 | AI backend | OpenClaw WebSocket Gateway |
 | Auth | Ed25519 keypair signing |
 | Persistence | `@tauri-apps/plugin-store` |

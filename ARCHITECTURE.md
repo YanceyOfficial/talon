@@ -11,7 +11,6 @@ Talon is a desktop AI assistant built with Tauri 2 + React. It provides a floati
 | Frontend | React 19 + TypeScript + Vite |
 | Desktop shell | Tauri 2.0 (Rust) |
 | Styling | Tailwind CSS 4.x + shadcn/ui (Radix UI) |
-| Animation | DotLottie (Lottie format) |
 | AI backend | OpenClaw WebSocket Gateway (`ws://localhost:18789`) |
 | Auth | Ed25519 keypair signing (`@noble/ed25519`) |
 | Persistence | `@tauri-apps/plugin-store` |
@@ -181,7 +180,6 @@ All state stored via `@tauri-apps/plugin-store`:
 
 Based on shadcn/ui (Radix UI + Tailwind CSS v4):
 
-- **`TalonAvatar`**: Lottie animation — states: idle, thinking, speaking, error
 - **`MessageBubble`**: Renders all message types with structured content blocks; collapses tool results
 - **`Markdown`**: Two variants — default (chat window, normal sizing) and compact (main window, `text-xs`)
 
