@@ -4,6 +4,14 @@ All notable changes to Talon will be documented in this file.
 
 ---
 
+## [1.5.0](https://github.com/YanceyOfficial/talon/compare/v1.4.3...v1.5.0) (2026-03-11)
+
+
+### Features
+
+* release new icon ([154131f](https://github.com/YanceyOfficial/talon/commit/154131f2d4c858f7e411b91a976d1a6462140874))
+* release new icon ([d01c8aa](https://github.com/YanceyOfficial/talon/commit/d01c8aafa512523505c71ff63d01489770b32ef2))
+
 ## [1.4.3](https://github.com/YanceyOfficial/talon/compare/v1.4.2...v1.4.3) (2026-03-10)
 
 
