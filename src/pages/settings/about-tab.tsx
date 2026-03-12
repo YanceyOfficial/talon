@@ -6,6 +6,42 @@ import { ConnectionStatus } from '@/types/openclaw'
 import { Check, Download, Loader2, RefreshCw, RotateCcw } from 'lucide-react'
 import { version } from '../../../package.json'
 
+function ReleaseNotes({ body }: { body: string }) {
+  // Parse lines: treat "- …" / "* …" bullet lines as list items,
+  // "## …" / "### …" as section headings, skip empty lines.
+  const lines = body.split('\n')
+  return (
+    <div className="bg-muted/50 max-h-48 space-y-1 overflow-y-auto rounded-md px-3 py-2 text-xs">
+      {lines.map((line, i) => {
+        const trimmed = line.trim()
+        if (!trimmed) return null
+        const headingMatch = trimmed.match(/^#{1,3}\s+(.+)/)
+        if (headingMatch) {
+          return (
+            <p key={i} className="text-muted-foreground pt-1 font-semibold">
+              {headingMatch[1]}
+            </p>
+          )
+        }
+        const bulletMatch = trimmed.match(/^[-*]\s+(.+)/)
+        if (bulletMatch) {
+          return (
+            <div key={i} className="flex gap-1.5">
+              <span className="text-muted-foreground mt-px select-none">•</span>
+              <span>{bulletMatch[1]}</span>
+            </div>
+          )
+        }
+        return (
+          <p key={i} className="text-muted-foreground">
+            {trimmed}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
+
 interface AboutTabProps {
   serverVersion: string | null
   status: ConnectionStatus
@@ -22,6 +58,7 @@ export function AboutTab({
   const {
     state: updateState,
     availableVersion,
+    releaseNotes,
     downloadProgress,
     errorMsg,
     checkForUpdate,
@@ -118,17 +155,22 @@ export function AboutTab({
           )}
 
           {updateState === 'available' && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">
-                v{availableVersion} available
-              </span>
-              <button
-                onClick={downloadAndInstall}
-                className="bg-primary text-primary-foreground flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-90"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Download & Install
-              </button>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">
+                  v{availableVersion} available
+                </span>
+                <button
+                  onClick={downloadAndInstall}
+                  className="bg-primary text-primary-foreground flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-90"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download & Install
+                </button>
+              </div>
+              {releaseNotes && (
+                <ReleaseNotes body={releaseNotes} />
+              )}
             </div>
           )}
 
@@ -153,17 +195,22 @@ export function AboutTab({
           )}
 
           {updateState === 'ready' && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                Ready to install v{availableVersion}
-              </span>
-              <button
-                onClick={restart}
-                className="bg-primary text-primary-foreground flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-90"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                Restart to Update
-              </button>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                  Ready to install v{availableVersion}
+                </span>
+                <button
+                  onClick={restart}
+                  className="bg-primary text-primary-foreground flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-90"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Restart to Update
+                </button>
+              </div>
+              {releaseNotes && (
+                <ReleaseNotes body={releaseNotes} />
+              )}
             </div>
           )}
 

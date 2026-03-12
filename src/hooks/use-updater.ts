@@ -14,6 +14,7 @@ export type UpdateState =
 export function useUpdater() {
   const [state, setState] = useState<UpdateState>('idle')
   const [availableVersion, setAvailableVersion] = useState<string | null>(null)
+  const [releaseNotes, setReleaseNotes] = useState<string | null>(null)
   const [downloadProgress, setDownloadProgress] = useState(0)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const updateRef = useRef<Update | null>(null)
@@ -26,6 +27,7 @@ export function useUpdater() {
       if (update) {
         updateRef.current = update
         setAvailableVersion(update.version)
+        setReleaseNotes(update.body ?? null)
         setState('available')
         return true
       } else {
@@ -79,6 +81,7 @@ export function useUpdater() {
   return {
     state,
     availableVersion,
+    releaseNotes,
     downloadProgress,
     errorMsg,
     checkForUpdate,

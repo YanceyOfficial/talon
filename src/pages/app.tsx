@@ -233,6 +233,7 @@ function App() {
   }
 
   const handleSendMessage = () => {
+    if (isStreaming) return
     const trimmed = input.trim()
     if (!trimmed || !isConnected) return
     sendMessage(trimmed)
@@ -279,9 +280,21 @@ function App() {
             strokeLinejoin="round"
           />
           {/* fill — match card's bg-card/95 opacity */}
-          <path d="M0 9 L10 0.5 L20 9 Z" fill="var(--card)" fillOpacity="0.95" />
+          <path
+            d="M0 9 L10 0.5 L20 9 Z"
+            fill="var(--card)"
+            fillOpacity="0.95"
+          />
           {/* cover the base seam so card border doesn't show through */}
-          <line x1="-1" y1="9.5" x2="21" y2="9.5" stroke="var(--card)" strokeWidth="2" strokeOpacity="0.95" />
+          <line
+            x1="-1"
+            y1="9.5"
+            x2="21"
+            y2="9.5"
+            stroke="var(--card)"
+            strokeWidth="2"
+            strokeOpacity="0.95"
+          />
         </svg>
       </div>
       {/* Widget Card */}
@@ -427,7 +440,7 @@ function App() {
             placeholder={isConnected ? 'Ask me anything…' : 'Disconnected…'}
             disabled={!isConnected}
             rows={1}
-            className="no-scrollbar bg-background/60 text-foreground placeholder:text-muted-foreground/50 ring-border/60 max-h-20 min-h-8 flex-1 resize-none rounded-2xl border border-border/50 px-3 py-2 text-xs transition-shadow outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-40"
+            className="no-scrollbar bg-background/60 text-foreground placeholder:text-muted-foreground/50 ring-border/60 border-border/50 max-h-20 min-h-8 flex-1 resize-none rounded-2xl border px-3 py-2 text-xs transition-shadow outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-40"
           />
           <button
             onClick={handleSendMessage}
