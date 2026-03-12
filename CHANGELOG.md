@@ -4,6 +4,14 @@ All notable changes to Talon will be documented in this file.
 
 ---
 
+## [1.6.0](https://github.com/YanceyOfficial/talon/compare/v1.5.0...v1.6.0) (2026-03-12)
+
+
+### Features
+
+* add launch at login toggle and show release notes on update ([38662c9](https://github.com/YanceyOfficial/talon/commit/38662c935dede9a8efb526c8733bfc69d1540c62))
+* add launch at login toggle and show release notes on update ([f796354](https://github.com/YanceyOfficial/talon/commit/f7963549aa5d3663f0f39dcb38afb15af35ca542))
+
 ## [1.5.0](https://github.com/YanceyOfficial/talon/compare/v1.4.3...v1.5.0) (2026-03-11)
 
 
