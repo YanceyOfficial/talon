@@ -1,6 +1,7 @@
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{Emitter, Manager};
+use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
 #[tauri::command]
@@ -55,9 +56,30 @@ fn set_global_shortcut(app: tauri::AppHandle, shortcut: String) -> Result<(), St
     Ok(())
 }
 
+#[tauri::command]
+fn set_autostart(app: tauri::AppHandle, enabled: bool) -> Result<(), String> {
+    let manager = app.autolaunch();
+    if enabled {
+        manager.enable().map_err(|e| e.to_string())
+    } else {
+        manager.disable().map_err(|e| e.to_string())
+    }
+}
+
+#[tauri::command]
+fn get_autostart(app: tauri::AppHandle) -> Result<bool, String> {
+    app.autolaunch()
+        .is_enabled()
+        .map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
@@ -175,7 +197,13 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![reload_window, update_tray_tooltip, set_global_shortcut])
+        .invoke_handler(tauri::generate_handler![
+            reload_window,
+            update_tray_tooltip,
+            set_global_shortcut,
+            set_autostart,
+            get_autostart
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

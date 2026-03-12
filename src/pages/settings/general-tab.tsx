@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { useTheme } from '@/hooks/use-theme'
 import { saveSettings, type AppSettings } from '@/lib/store'
 import { cn } from '@/lib/utils'
@@ -80,6 +81,18 @@ interface GeneralTabProps {
 export function GeneralTab({ settings, setSettings }: GeneralTabProps) {
   const { theme, setTheme } = useTheme()
   const [saved, setSaved] = useState(false)
+  const [autostart, setAutostart] = useState(false)
+
+  useEffect(() => {
+    invoke<boolean>('get_autostart')
+      .then(setAutostart)
+      .catch(console.error)
+  }, [])
+
+  async function handleAutostartChange(enabled: boolean) {
+    await invoke('set_autostart', { enabled }).catch(console.error)
+    setAutostart(enabled)
+  }
 
   return (
     <div className="max-w-3xl space-y-4">
@@ -113,6 +126,19 @@ export function GeneralTab({ settings, setSettings }: GeneralTabProps) {
               <span>{label}</span>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Launch at Login */}
+      <div className="space-y-3 rounded-lg border p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="text-sm font-medium">Launch at Login</Label>
+            <p className="text-muted-foreground mt-1 text-xs">
+              Automatically start Talon when you log in.
+            </p>
+          </div>
+          <Switch checked={autostart} onCheckedChange={handleAutostartChange} />
         </div>
       </div>
 
