@@ -4,6 +4,14 @@ All notable changes to Talon will be documented in this file.
 
 ---
 
+## [1.7.0](https://github.com/YanceyOfficial/talon/compare/v1.6.0...v1.7.0) (2026-03-13)
+
+
+### Features
+
+* auto-switch to most recent session on reconnect after sleep/wake ([db75dff](https://github.com/YanceyOfficial/talon/commit/db75dff9ab90510ef1658aeaaf6541d56fecaefa))
+* auto-switch to most recent session on reconnect after sleep/wake ([a7fff46](https://github.com/YanceyOfficial/talon/commit/a7fff46311ac70e0f471bf816d51b551dedcd3dc))
+
 ## [1.6.0](https://github.com/YanceyOfficial/talon/compare/v1.5.0...v1.6.0) (2026-03-12)
 
 
