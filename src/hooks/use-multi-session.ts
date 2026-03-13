@@ -31,7 +31,8 @@ import {
 } from '@/store/atoms'
 import type {
   ChatHistoryResponse,
-  GatewayAgentsListResponse
+  GatewayAgentsListResponse,
+  GatewaySessionsListResponse
 } from '@/types/gateway'
 import { ConnectionStatus } from '@/types/openclaw'
 import { SessionConfig, SessionType } from '@/types/session'
@@ -85,6 +86,10 @@ export function useMultiSessionOpenClaw() {
   // Without this, the initial render writes 'main' to the store before the
   // async restore has a chance to read back the previously-selected session.
   const hasRestoredRef = useRef(false)
+
+  // Tracks whether we've successfully connected at least once.
+  // Used to distinguish a reconnect (sleep/wake) from the initial connect.
+  const wasConnectedRef = useRef(false)
 
   // ─── Restore activeSessionId from store on mount (cross-window handoff) ───
   useEffect(() => {
@@ -201,9 +206,15 @@ export function useMultiSessionOpenClaw() {
   }, [listGatewayAgents, setSessions, setSessionsLoading])
 
   // Auto-sync on connect
+  const autoSwitchOnReconnectRef = useRef<(() => void) | undefined>(undefined)
   useEffect(() => {
     if (status !== ConnectionStatus.CONNECTED) return
     syncSessionsFromGateway()
+    if (wasConnectedRef.current) {
+      // Reconnect after a prior disconnect (e.g. computer woke from sleep)
+      autoSwitchOnReconnectRef.current?.()
+    }
+    wasConnectedRef.current = true
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
@@ -517,12 +528,36 @@ export function useMultiSessionOpenClaw() {
   )
 
   // ─── Auto-switch on background session completion ─────────────────────────
-  // Keep callback ref current every render so it always closes over the latest
-  // switchToSessionKey (handles both known sessions and cron/transient keys).
+  // Keep callback refs current every render so they always close over the
+  // latest switchToSessionKey (handles both known sessions and cron/transient keys).
   useEffect(() => {
     onBackgroundSessionFinalRef.current = async (key: string) => {
       console.log('[Session] Background session completed, switching to:', key)
       await switchToSessionKey(key)
+    }
+
+    // On reconnect after sleep/wake, switch to the most recently active session
+    autoSwitchOnReconnectRef.current = async () => {
+      try {
+        const response =
+          (await listGatewaySessions()) as GatewaySessionsListResponse
+        const list = response?.payload?.sessions
+        if (!list || list.length === 0) return
+
+        // Gateway returns sessions sorted by updatedAt desc — most active first
+        const mostRecent = list[0]
+        if (!mostRecent?.key) return
+
+        console.log(
+          '[Session] Reconnect: switching to most recent session:',
+          mostRecent.key,
+          'updatedAt:',
+          mostRecent.updatedAt
+        )
+        await switchToSessionKey(mostRecent.key, mostRecent.label)
+      } catch (error) {
+        console.error('[Session] Failed to auto-switch on reconnect:', error)
+      }
     }
   })
 
